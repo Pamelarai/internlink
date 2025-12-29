@@ -10,6 +10,7 @@ const SignupInternship = () => {
     major: '',
     graduationYear: ''
   });
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -21,18 +22,19 @@ const SignupInternship = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
     try {
       const res = await api.post('/intern/signup', formData);
       console.log('Signup response', res.data);
+
       localStorage.setItem('token', res.data.user?.id);
       alert('Signup successful');
-      // Navigate to login or home
+
       window.location.href = '/login';
     } catch (err) {
       console.error('Signup error', err);
       const errMsg = err.response?.data?.error || 'Signup failed';
       setError(errMsg);
-      alert(errMsg);
     } finally {
       setLoading(false);
     }
@@ -41,7 +43,16 @@ const SignupInternship = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <form onSubmit={handleSubmit} className="bg-white p-8 rounded shadow-md w-80">
-        <h2 className="text-2xl font-bold mb-6 text-center">Sign Up for Internship</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center">
+          Sign Up for Internship
+        </h2>
+
+        {error && (
+          <p className="text-red-500 text-sm mb-4 text-center">
+            {error}
+          </p>
+        )}
+
         <div className="mb-4">
           <label className="block text-gray-700 mb-2">Full Name</label>
           <input
@@ -53,6 +64,7 @@ const SignupInternship = () => {
             required
           />
         </div>
+
         <div className="mb-4">
           <label className="block text-gray-700 mb-2">Email</label>
           <input
@@ -64,6 +76,7 @@ const SignupInternship = () => {
             required
           />
         </div>
+
         <div className="mb-4">
           <label className="block text-gray-700 mb-2">Password</label>
           <input
@@ -74,6 +87,7 @@ const SignupInternship = () => {
             required
           />
         </div>
+
         <div className="mb-4">
           <label className="block text-gray-700 mb-2">University</label>
           <input
@@ -85,6 +99,7 @@ const SignupInternship = () => {
             required
           />
         </div>
+
         <div className="mb-4">
           <label className="block text-gray-700 mb-2">Major</label>
           <input
@@ -96,6 +111,7 @@ const SignupInternship = () => {
             required
           />
         </div>
+
         <div className="mb-6">
           <label className="block text-gray-700 mb-2">Graduation Year</label>
           <input
@@ -107,8 +123,13 @@ const SignupInternship = () => {
             required
           />
         </div>
-        <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">
-          Sign Up
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+        >
+          {loading ? 'Signing up...' : 'Sign Up'}
         </button>
       </form>
     </div>
