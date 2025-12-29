@@ -1,0 +1,96 @@
+### SIGNUP API TESTS
+
+### Test Successful Intern Signup
+POST http://localhost:4000/api/intern/signup
+Content-Type: application/json
+
+{
+  "fullName": "Alice Johnson",
+  "email": "alice@example.com",
+  "password": "securepass123",
+  "university": "Stanford",
+  "major": "Software Engineering",
+  "graduationYear": 2026
+}
+
+###
+
+### Test Intern Signup with Missing Required Field
+POST http://localhost:4000/api/intern/signup
+Content-Type: application/json
+
+{
+  "fullName": "Bob Smith",
+  "email": "bob@example.com",
+  "password": "securepass123",
+  "university": "Harvard"
+}
+
+###
+
+### Test Intern Signup with Weak Password
+POST http://localhost:4000/api/intern/signup
+Content-Type: application/json
+
+{
+  "fullName": "Charlie Brown",
+  "email": "charlie@example.com",
+  "password": "123",
+  "university": "Yale",
+  "major": "Business"
+}
+
+###
+
+### Test Successful Provider Signup
+POST http://localhost:4000/api/provider/signup
+Content-Type: application/json
+
+{
+  "companyName": "Innovation Labs",
+  "email": "info@innovationlabs.com",
+  "password": "corporatepass123",
+  "industry": "Software Development",
+  "website": "https://innovationlabs.com"
+}
+
+###
+
+### Test Provider Signup Without Website (Optional)
+POST http://localhost:4000/api/provider/signup
+Content-Type: application/json
+
+{
+  "companyName": "StartupXYZ",
+  "email": "contact@startupxyz.com",
+  "password": "startup123",
+  "industry": "AI/ML"
+}
+
+###
+
+### Test Provider Signup with Invalid Website URL
+POST http://localhost:4000/api/provider/signup
+Content-Type: application/json
+
+{
+  "companyName": "BadURL Corp",
+  "email": "bad@corp.com",
+  "password": "password123",
+  "industry": "Tech",
+  "website": "not-a-valid-url"
+}
+
+###
+
+### Test Duplicate Email Registration
+POST http://localhost:4000/api/intern/signup
+Content-Type: application/json
+
+{
+  "fullName": "David Lee",
+  "email": "alice@example.com",
+  "password": "newpass123",
+  "university": "MIT",
+  "major": "Computer Science"
+}

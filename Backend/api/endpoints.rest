@@ -1,0 +1,146 @@
+### InternLink API Documentation
+### Base URL: http://localhost:4000/api
+
+### ============================================
+### AUTHENTICATION ENDPOINTS
+### ============================================
+
+### Login
+### Method: POST
+### Description: Authenticate user and receive JWT token
+### Required Fields: email, password
+POST http://localhost:4000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+
+### Response (200 OK):
+### {
+###   "success": true,
+###   "message": "Login successful",
+###   "data": {
+###     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+###     "user": {
+###       "id": "user-id",
+###       "email": "user@example.com",
+###       "role": "INTERN" | "PROVIDER"
+###     }
+###   },
+###   "timestamp": "2025-12-29T10:30:00.000Z"
+### }
+
+### ============================================
+### SIGNUP ENDPOINTS
+### ============================================
+
+### Signup as Intern
+### Method: POST
+### Description: Register a new intern account
+### Required Fields: fullName, email, password, university, major
+### Optional Fields: graduationYear
+POST http://localhost:4000/api/intern/signup
+Content-Type: application/json
+
+{
+  "fullName": "John Doe",
+  "email": "intern@example.com",
+  "password": "password123",
+  "university": "MIT",
+  "major": "Computer Science",
+  "graduationYear": 2025
+}
+
+### Response (201 Created):
+### {
+###   "success": true,
+###   "message": "Signup successful",
+###   "data": {
+###     "user": {
+###       "id": "user-id",
+###       "email": "intern@example.com",
+###       "role": "INTERN",
+###       "internProfile": {
+###         "fullName": "John Doe",
+###         "university": "MIT",
+###         "major": "Computer Science",
+###         "graduationYear": 2025
+###       }
+###     }
+###   },
+###   "timestamp": "2025-12-29T10:30:00.000Z"
+### }
+
+### Signup as Provider
+### Method: POST
+### Description: Register a new provider (company) account
+### Required Fields: companyName, email, password, industry
+### Optional Fields: website
+POST http://localhost:4000/api/provider/signup
+Content-Type: application/json
+
+{
+  "companyName": "Tech Company Inc",
+  "email": "company@example.com",
+  "password": "password123",
+  "industry": "Technology",
+  "website": "https://techcompany.com"
+}
+
+### Response (201 Created):
+### {
+###   "success": true,
+###   "message": "Signup successful",
+###   "data": {
+###     "user": {
+###       "id": "user-id",
+###       "email": "company@example.com",
+###       "role": "PROVIDER",
+###       "providerProfile": {
+###         "companyName": "Tech Company Inc",
+###         "industry": "Technology",
+###         "website": "https://techcompany.com"
+###       }
+###     }
+###   },
+###   "timestamp": "2025-12-29T10:30:00.000Z"
+### }
+
+### ============================================
+### ERROR RESPONSES
+### ============================================
+
+### Validation Error (422):
+### {
+###   "success": false,
+###   "message": "Validation failed",
+###   "errors": ["email is required", "password must be at least 6 characters"],
+###   "statusCode": 422,
+###   "timestamp": "2025-12-29T10:30:00.000Z"
+### }
+
+### Authentication Error (401):
+### {
+###   "success": false,
+###   "message": "Invalid credentials",
+###   "statusCode": 401,
+###   "timestamp": "2025-12-29T10:30:00.000Z"
+### }
+
+### Conflict Error (409):
+### {
+###   "success": false,
+###   "message": "Email already registered",
+###   "statusCode": 409,
+###   "timestamp": "2025-12-29T10:30:00.000Z"
+### }
+
+### Server Error (500):
+### {
+###   "success": false,
+###   "message": "Server error",
+###   "statusCode": 500,
+###   "timestamp": "2025-12-29T10:30:00.000Z"
+### }

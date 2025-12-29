@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import api from '../utils/api';
 
 const SignupProvider = () => {
   const [formData, setFormData] = useState({
@@ -8,15 +9,32 @@ const SignupProvider = () => {
     industry: '',
     website: ''
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle signup logic here
-    alert('Provider Signup submitted');
+    setLoading(true);
+    setError('');
+    try {
+      const res = await api.post('/provider/signup', formData);
+      console.log('Provider signup response', res.data);
+      localStorage.setItem('token', res.data.user?.id);
+      alert('Signup successful');
+      // Navigate to login or home
+      window.location.href = '/login';
+    } catch (err) {
+      console.error('Provider signup error', err);
+      const errMsg = err.response?.data?.error || 'Signup failed';
+      setError(errMsg);
+      alert(errMsg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

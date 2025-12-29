@@ -1,13 +1,32 @@
 import React, { useState } from 'react';
+import api from '../utils/api';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle login logic here
-    alert('Login submitted');
+    setLoading(true);
+    setError('');
+    try {
+      const res = await api.post('/auth/login', { email, password });
+      console.log('Login success', res.data);
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
+      alert('Login successful');
+      // Navigate to dashboard or home page
+      window.location.href = '/';
+    } catch (err) {
+      console.error('Login error', err);
+      const errMsg = err.response?.data?.error || 'Login failed';
+      setError(errMsg);
+      alert(errMsg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

@@ -1,0 +1,42 @@
+### AUTHENTICATION API TESTS
+
+### Test Successful Login
+POST http://localhost:4000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+###
+
+### Test Login with Missing Email
+POST http://localhost:4000/api/auth/login
+Content-Type: application/json
+
+{
+  "password": "password123"
+}
+
+###
+
+### Test Login with Invalid Email Format
+POST http://localhost:4000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "invalidemail",
+  "password": "password123"
+}
+
+###
+
+### Test Login with Wrong Credentials
+POST http://localhost:4000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "nonexistent@example.com",
+  "password": "wrongpassword"
+}
