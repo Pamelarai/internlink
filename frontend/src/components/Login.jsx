@@ -14,11 +14,18 @@ const Login = () => {
     try {
       const res = await api.post('/auth/login', { email, password });
       console.log('Login success', res.data);
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('user', JSON.stringify(res.data.user));
+      localStorage.setItem('token', res.data.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.data.user));
       alert('Login successful');
-      // Navigate to dashboard or home page
-      window.location.href = '/';
+      // Navigate to dashboard based on role
+      const userRole = res.data.data.user.role;
+      if (userRole === 'PROVIDER') {
+        window.location.href = '/provider-dashboard';
+      } else if (userRole === 'INTERN') {
+        window.location.href = '/seeker-dashboard';
+      } else {
+        window.location.href = '/'; // fallback
+      }
     } catch (err) {
       console.error('Login error', err);
       const errMsg = err.response?.data?.error || 'Login failed';

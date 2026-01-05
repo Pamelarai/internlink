@@ -4,6 +4,8 @@ import SelectionPage from './components/SelectionPage';
 import Login from './components/Login';
 import SignupInternship from './components/SignupInternship';
 import SignupProvider from './components/SignupProvider';
+import ProviderDashboard from './components/ProviderDashboard';
+import SeekerDashboard from './components/SeekerDashboard';
 
 function App(){
   return(
@@ -14,6 +16,8 @@ function App(){
         <Route path="/login" element={<Login />} />
         <Route path="/signup/internship" element={<SignupInternship />} />
         <Route path="/signup/provider" element={<SignupProvider />} />
+        <Route path="/provider-dashboard" element={<ProviderDashboard />} />
+        <Route path="/seeker-dashboard" element={<SeekerDashboard />} />
       </Routes>
     </Router>
   )
