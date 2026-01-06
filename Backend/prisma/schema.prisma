@@ -25,6 +25,7 @@ model User {
   createdAt        DateTime         @default(now())
   internProfile    InternProfile?
   providerProfile  ProviderProfile?
+  notifications    Notification[]
 }
 
 model InternProfile {
@@ -35,6 +36,7 @@ model InternProfile {
   university     String
   major          String
   graduationYear Int?
+  applications   Application[]
 }
 
 model ProviderProfile {
@@ -44,4 +46,43 @@ model ProviderProfile {
   companyName String
   industry    String
   website     String
+  internships Internship[]
+}
+
+model Internship {
+  id                 Int          @id @default(autoincrement())
+  providerId         Int
+  provider           ProviderProfile @relation(fields: [providerId], references: [id])
+  title              String
+  description        String
+  requirements       String
+  location           String
+  duration           String
+  stipend            Float?
+  applicationDeadline DateTime
+  status             String       @default("DRAFT")
+  category           String       @default("General")
+  createdAt          DateTime     @default(now())
+  applications       Application[]
+}
+
+model Application {
+  id           Int        @id @default(autoincrement())
+  internshipId Int
+  internship   Internship @relation(fields: [internshipId], references: [id])
+  internId     Int
+  intern       InternProfile @relation(fields: [internId], references: [id])
+  coverLetter  String
+  resume       String
+  status       String      @default("PENDING")
+  createdAt    DateTime    @default(now())
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
 }
