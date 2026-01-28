@@ -1,11 +1,11 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const { authenticateToken } = require('../middleware/authMiddleware');
-const {
+import { authenticateToken } from '../middleware/authMiddleware.js';
+import {
   getUserNotifications,
   markNotificationAsRead,
   createNotification,
-} = require('../controllers/notificationController');
+} from '../controllers/notificationController.js';
 
 // Protected routes
 router.use(authenticateToken);
@@ -19,4 +19,4 @@ router.put('/:id/read', markNotificationAsRead);
 // Create notification (internal use, but exposed for testing)
 router.post('/', createNotification);
 
-module.exports = router;
+export default router;

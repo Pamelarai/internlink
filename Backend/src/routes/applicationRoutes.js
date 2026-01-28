@@ -1,12 +1,12 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const { authenticateToken } = require('../middleware/authMiddleware');
-const {
+import { authenticateToken } from '../middleware/authMiddleware.js';
+import {
   applyForInternship,
   getProviderApplications,
   getInternApplications,
   updateApplicationStatus,
-} = require('../controllers/applicationController');
+} from '../controllers/applicationController.js';
 
 // Protected routes
 router.use(authenticateToken);
@@ -23,4 +23,4 @@ router.get('/intern', getInternApplications);
 // Update application status (provider only)
 router.put('/:id/status', updateApplicationStatus);
 
-module.exports = router;
+export default router;

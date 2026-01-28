@@ -5,7 +5,7 @@ async function checkUser() {
     try {
         const users = await prisma.user.findMany({
             include: {
-                providerprofile: true
+                providerProfile: true
             }
         });
         console.log(JSON.stringify(users, null, 2));

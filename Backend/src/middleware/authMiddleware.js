@@ -14,8 +14,13 @@ export const authenticateToken = (req, res, next) => {
         return res.status(403).json({ error: 'Invalid token' });
     }
 
-    req.user = user;
+    // Ensure id is present for backward compatibility
+    req.user = {
+        ...user,
+        id: user.id || user.userId
+    };
     next();
+
 };
 
 export const authorizeProvider = (req, res, next) => {

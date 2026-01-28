@@ -32,15 +32,34 @@ const SeekerDashboard = () => {
     } else {
       const loadDashboardData = async () => {
         try {
-          const [internshipsRes, applicationsRes, notificationsRes] = await Promise.all([
+          const [internshipsRes, applicationsRes, notificationsRes, profileRes] = await Promise.all([
             api.get('/internships'),
             api.get('/applications/intern'),
-            api.get('/notifications')
+            api.get('/notifications'),
+            api.get('/intern/my/profile').catch(() => ({ data: null })) // Handle case where profile doesn't exist yet
           ]);
 
           setInternships(internshipsRes.data);
           setApplications(applicationsRes.data);
           setNotifications(notificationsRes.data);
+
+          // Load profile data if it exists
+          if (profileRes.data && profileRes.data.profile) {
+            setProfileData({
+              fullName: profileRes.data.profile.fullName,
+              university: profileRes.data.profile.university,
+              major: profileRes.data.profile.major,
+              graduationYear: profileRes.data.profile.graduationYear,
+              skills: 'Programming, Problem Solving, Team Work' // Default skills since not in schema yet
+            });
+            setProfileForm({
+              fullName: profileRes.data.profile.fullName,
+              university: profileRes.data.profile.university,
+              major: profileRes.data.profile.major,
+              graduationYear: profileRes.data.profile.graduationYear || '',
+              skills: 'Programming, Problem Solving, Team Work'
+            });
+          }
 
           // Calculate stats
           const totalApplications = applicationsRes.data.length;
@@ -80,14 +99,20 @@ const SeekerDashboard = () => {
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
     try {
-      // Here you would typically make an API call to update the profile
-      // For now, we'll just simulate the update and switch to view mode
+      await api.put('/intern/my/profile', {
+        fullName: profileForm.fullName,
+        university: profileForm.university,
+        major: profileForm.major,
+        graduationYear: profileForm.graduationYear
+      });
+
+      // Update local state with the saved data
       setProfileData({
-        fullName: profileForm.fullName || 'John Doe',
-        university: profileForm.university || 'University Name',
-        major: profileForm.major || 'Computer Science',
-        graduationYear: profileForm.graduationYear || 2025,
-        skills: profileForm.skills || 'Programming, Problem Solving, Team Work'
+        fullName: profileForm.fullName,
+        university: profileForm.university,
+        major: profileForm.major,
+        graduationYear: profileForm.graduationYear,
+        skills: profileForm.skills
       });
       setIsEditingProfile(false);
       alert('Profile updated successfully!');

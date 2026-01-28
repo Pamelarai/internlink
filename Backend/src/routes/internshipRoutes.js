@@ -5,8 +5,7 @@ import {
     getAllInternships,
     getProviderInternships,
     updateInternship,
-    deleteInternship,
-    publishInternship
+    deleteInternship
 } from '../controllers/internshipController.js';
 import { authenticateToken, authorizeProvider } from '../middleware/authMiddleware.js';
 
@@ -23,6 +22,5 @@ router.post('/', createInternship);
 router.get('/provider', getProviderInternships);
 router.put('/:id', updateInternship);
 router.delete('/:id', deleteInternship);
-router.patch('/:id/publish', publishInternship);
 
 export default router;

@@ -1,5 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+import { prisma } from '../libs/prisma.js';
 
 // Get user's notifications
 const getUserNotifications = async (req, res) => {
@@ -66,7 +65,7 @@ const createNotification = async (req, res) => {
   }
 };
 
-module.exports = {
+export {
   getUserNotifications,
   markNotificationAsRead,
   createNotification,

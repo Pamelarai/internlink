@@ -45,7 +45,7 @@ model ProviderProfile {
   userId      Int    @unique
   companyName String
   industry    String
-  website     String
+  website     String?
   internships Internship[]
 }
 
@@ -54,17 +54,35 @@ model Internship {
   providerId         Int
   provider           ProviderProfile @relation(fields: [providerId], references: [id])
   title              String
-  description        String
-  requirements       String
+  description        String       @db.Text
+  requirements       String       @db.Text
   location           String
+  locationType       String?      // Remote, Onsite, Hybrid
   duration           String
   stipend            Float?
   applicationDeadline DateTime
-  status             String       @default("DRAFT")
+  startDate          DateTime?
+  status             String       @default("OPEN")
   category           String       @default("General")
+  type               String?      // Paid, Unpaid
+  workingHours       String?      // Full-time, Part-time
+  hoursPerDay        Int?
+  numberOfOpenings   Int?
+  educationLevel     String?
+  experienceRequired String?
+  aboutInternship    String?      @db.Text
+  rolesResponsibilities String?   @db.Text
+  whatInternWillLearn String?      @db.Text
+  selectionProcess   String?      @db.Text
+  certificate        Boolean      @default(false)
+  jobOffer           Boolean      @default(false)
+  otherBenefits      String?      @db.Text
+  requiredSkills     String?      @db.Text
+  companyName        String?      // To store company name if different from provider
   createdAt          DateTime     @default(now())
   applications       Application[]
 }
+
 
 model Application {
   id           Int        @id @default(autoincrement())

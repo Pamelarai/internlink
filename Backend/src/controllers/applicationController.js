@@ -1,5 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+import { prisma } from '../libs/prisma.js';
 
 // Apply for an internship
 const applyForInternship = async (req, res) => {
@@ -47,12 +46,21 @@ const applyForInternship = async (req, res) => {
 // Get applications for provider's internships
 const getProviderApplications = async (req, res) => {
   try {
-    const providerId = req.user.providerProfile.id;
+    const userId = req.user.id;
+
+    // Fetch provider profile first
+    const providerProfile = await prisma.providerProfile.findUnique({
+      where: { userId }
+    });
+
+    if (!providerProfile) {
+      return res.status(404).json({ error: 'Provider profile not found' });
+    }
 
     const applications = await prisma.application.findMany({
       where: {
         internship: {
-          providerId,
+          providerId: providerProfile.id,
         },
       },
       include: {
@@ -63,22 +71,31 @@ const getProviderApplications = async (req, res) => {
           },
         },
       },
+      orderBy: { createdAt: 'desc' }
     });
 
     res.json(applications);
   } catch (error) {
     console.error('Error fetching applications:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: 'Internal server error', details: error.message });
   }
 };
 
 // Get intern's applications
 const getInternApplications = async (req, res) => {
   try {
-    const internId = req.user.internProfile.id;
+    const userId = req.user.id;
+
+    const internProfile = await prisma.internProfile.findUnique({
+      where: { userId }
+    });
+
+    if (!internProfile) {
+      return res.status(404).json({ error: 'Intern profile not found' });
+    }
 
     const applications = await prisma.application.findMany({
-      where: { internId },
+      where: { internId: internProfile.id },
       include: {
         internship: {
           include: {
@@ -90,12 +107,13 @@ const getInternApplications = async (req, res) => {
           },
         },
       },
+      orderBy: { createdAt: 'desc' }
     });
 
     res.json(applications);
   } catch (error) {
     console.error('Error fetching applications:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: 'Internal server error', details: error.message });
   }
 };
 
@@ -104,13 +122,21 @@ const updateApplicationStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
-    const providerId = req.user.providerProfile.id;
+    const userId = req.user.id;
+
+    const providerProfile = await prisma.providerProfile.findUnique({
+      where: { userId }
+    });
+
+    if (!providerProfile) {
+      return res.status(404).json({ error: 'Provider profile not found' });
+    }
 
     const application = await prisma.application.updateMany({
       where: {
         id: parseInt(id),
         internship: {
-          providerId,
+          providerId: providerProfile.id,
         },
       },
       data: { status },
@@ -123,11 +149,12 @@ const updateApplicationStatus = async (req, res) => {
     res.json({ message: 'Application status updated successfully' });
   } catch (error) {
     console.error('Error updating application status:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: 'Internal server error', details: error.message });
   }
 };
 
-module.exports = {
+
+export {
   applyForInternship,
   getProviderApplications,
   getInternApplications,

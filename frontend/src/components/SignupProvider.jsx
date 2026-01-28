@@ -7,7 +7,6 @@ const SignupProvider = () => {
     email: '',
     password: '',
     industry: '',
-    website: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -84,17 +83,7 @@ const SignupProvider = () => {
             required
           />
         </div>
-        <div className="mb-6">
-          <label className="block text-gray-700 mb-2 font-medium">Website</label>
-          <input
-            type="url"
-            name="website"
-            value={formData.website}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
-            required
-          />
-        </div>
+
         <button type="submit" className="w-full bg-gray-200 text-gray-800 py-2 rounded-lg hover:bg-gray-300 font-semibold transition-colors duration-200 border border-gray-300">
           Sign Up
         </button>

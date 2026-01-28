@@ -1,10 +1,14 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+import { prisma } from '../libs/prisma.js';
 
 // Create internship
 const createInternship = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: 'User ID not found in token' });
+    }
+
+    console.log('Creating internship for user ID:', userId);
 
     // Get provider profile
     const providerProfile = await prisma.providerProfile.findUnique({
@@ -12,6 +16,7 @@ const createInternship = async (req, res) => {
     });
 
     if (!providerProfile) {
+      console.error('Provider profile not found for user:', userId);
       return res.status(404).json({ error: 'Provider profile not found' });
     }
 
@@ -23,27 +28,82 @@ const createInternship = async (req, res) => {
       duration,
       stipend,
       applicationDeadline,
+      status,
+      category,
+      locationType,
+      startDate,
+      type,
+      workingHours,
+      hoursPerDay,
+      numberOfOpenings,
+      educationLevel,
+      experienceRequired,
+      aboutInternship,
+      rolesResponsibilities,
+      whatInternWillLearn,
+      selectionProcess,
+      certificate,
+      jobOffer,
+      otherBenefits,
+      requiredSkills,
+      companyName,
     } = req.body;
 
+    // Validate required fields
+    if (!title || !description || !requirements || !location || !duration || !applicationDeadline) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const internshipData = {
+      providerId: providerProfile.id,
+      title,
+      description,
+      requirements,
+      location,
+      locationType: locationType || 'Onsite',
+      duration,
+      stipend: stipend ? parseFloat(stipend) : null,
+      applicationDeadline: new Date(applicationDeadline),
+      startDate: startDate ? new Date(startDate) : null,
+      status: status || 'OPEN',
+      category: category || 'General',
+      type: type || 'Unpaid',
+      workingHours: workingHours || 'Full-time',
+      hoursPerDay: hoursPerDay ? parseInt(hoursPerDay) : null,
+      numberOfOpenings: numberOfOpenings ? parseInt(numberOfOpenings) : null,
+      educationLevel,
+      experienceRequired,
+      aboutInternship,
+      rolesResponsibilities,
+      whatInternWillLearn,
+      selectionProcess,
+      certificate: certificate === true || certificate === 'on',
+      jobOffer: jobOffer === true || jobOffer === 'on',
+      otherBenefits,
+      requiredSkills,
+      companyName,
+    };
+
+    console.log('Attempting to create internship with data');
+
     const internship = await prisma.internship.create({
-      data: {
-        providerId: providerProfile.id,
-        title,
-        description,
-        requirements,
-        location,
-        duration,
-        stipend: stipend ? parseFloat(stipend) : null,
-        applicationDeadline: new Date(applicationDeadline),
-      },
+      data: internshipData,
     });
 
+    console.log('Internship created successfully:', internship.id);
     res.status(201).json(internship);
   } catch (error) {
     console.error('Error creating internship:', error);
-    res.status(500).json({ error: 'Failed to create internship' });
+    res.status(500).json({
+      error: 'Failed to create internship',
+      details: error.message
+    });
   }
 };
+
+
+
+
 
 // Get all internships for provider
 const getProviderInternships = async (req, res) => {
@@ -128,13 +188,19 @@ const updateInternship = async (req, res) => {
       return res.status(404).json({ error: 'Internship not found' });
     }
 
-    const updateData = req.body;
-    if (updateData.applicationDeadline) {
-      updateData.applicationDeadline = new Date(updateData.applicationDeadline);
-    }
-    if (updateData.stipend) {
-      updateData.stipend = parseFloat(updateData.stipend);
-    }
+    const data = req.body;
+
+    // Normalize data types
+    const updateData = {
+      ...data,
+      stipend: data.stipend ? parseFloat(data.stipend) : null,
+      applicationDeadline: data.applicationDeadline ? new Date(data.applicationDeadline) : undefined,
+      startDate: data.startDate ? new Date(data.startDate) : undefined,
+      hoursPerDay: data.hoursPerDay ? parseInt(data.hoursPerDay) : undefined,
+      numberOfOpenings: data.numberOfOpenings ? parseInt(data.numberOfOpenings) : undefined,
+      certificate: data.certificate === true || data.certificate === 'on',
+      jobOffer: data.jobOffer === true || data.jobOffer === 'on',
+    };
 
     const updatedInternship = await prisma.internship.update({
       where: { id: parseInt(id) },
@@ -144,9 +210,10 @@ const updateInternship = async (req, res) => {
     res.json(updatedInternship);
   } catch (error) {
     console.error('Error updating internship:', error);
-    res.status(500).json({ error: 'Failed to update internship' });
+    res.status(500).json({ error: 'Failed to update internship', details: error.message });
   }
 };
+
 
 // Delete internship
 const deleteInternship = async (req, res) => {
@@ -184,7 +251,7 @@ const deleteInternship = async (req, res) => {
   }
 };
 
-module.exports = {
+export {
   createInternship,
   getProviderInternships,
   getAllInternships,

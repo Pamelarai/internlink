@@ -4,13 +4,14 @@
 
 import jwt from 'jsonwebtoken';
 
-export const generateToken = (userId, role) => {
+export const generateToken = (id, role) => {
   return jwt.sign(
-    { userId, role },
+    { id, role },
     process.env.JWT_SECRET || 'devsecret',
     { expiresIn: '7d' }
   );
 };
+
 
 export const verifyToken = (token) => {
   try {

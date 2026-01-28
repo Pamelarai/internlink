@@ -13,6 +13,8 @@ const ProviderDashboard = () => {
   const [applications, setApplications] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [showPostForm, setShowPostForm] = useState(false);
+  const [editingInternship, setEditingInternship] = useState(null);
+  const [viewingInternship, setViewingInternship] = useState(null);
   const [reloadTrigger, setReloadTrigger] = useState(0);
 
   useEffect(() => {
@@ -54,15 +56,58 @@ const ProviderDashboard = () => {
     }
   }, [reloadTrigger]);
 
-  const handlePostInternship = async (formData) => {
+  const handlePostInternship = async (e) => {
+    e.preventDefault();
     try {
-      await api.post('/internships', formData);
+      const formData = new FormData(e.target);
+      
+      const internshipData = {
+        title: formData.get('title'),
+        companyName: formData.get('companyName'),
+        location: formData.get('location'),
+        category: formData.get('category'),
+        locationType: formData.get('locationType'),
+        duration: formData.get('duration'),
+        applicationDeadline: formData.get('applicationDeadline'),
+        stipend: formData.get('stipend') ? parseFloat(formData.get('stipend')) : null,
+        aboutInternship: formData.get('aboutInternship'),
+        requirements: formData.get('requirements'),
+        // Map to required backend fields
+        description: formData.get('aboutInternship'),
+        status: editingInternship ? editingInternship.status : 'OPEN'
+      };
+
+      if (editingInternship) {
+        await api.put(`/internships/${editingInternship.id}`, internshipData);
+        alert('Internship updated successfully!');
+      } else {
+        await api.post('/internships', internshipData);
+        alert('Internship posted successfully!');
+      }
+      
+      setEditingInternship(null);
       setShowPostForm(false);
       setReloadTrigger(prev => prev + 1);
     } catch (error) {
-      console.error('Error posting internship:', error);
+      console.error('Error saving internship:', error);
+      alert('Failed to save internship. Please ensure all required fields are filled.');
     }
   };
+
+
+  const handleDeleteInternship = async (id) => {
+    if (window.confirm('Are you sure you want to delete this internship?')) {
+      try {
+        await api.delete(`/internships/${id}`);
+        alert('Internship deleted successfully!');
+        setReloadTrigger(prev => prev + 1);
+      } catch (error) {
+        console.error('Error deleting internship:', error);
+        alert('Failed to delete internship.');
+      }
+    }
+  };
+
 
   const handleApplicationAction = async (applicationId, action) => {
     try {
@@ -95,48 +140,95 @@ const ProviderDashboard = () => {
   );
 
   const renderInternships = () => (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold text-gray-800">My Internships</h2>
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
+        <div>
+          <h2 className="text-xl font-bold text-gray-900">My Internships</h2>
+          <p className="text-sm text-gray-500">Manage your active postings</p>
+        </div>
         <button
-          onClick={() => setShowPostForm(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          onClick={() => {
+            setEditingInternship(null);
+            setShowPostForm(true);
+          }}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
         >
-          Post New Internship
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          Post Internship
         </button>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full table-auto">
+        <table className="w-full text-sm">
           <thead>
-            <tr className="bg-gray-50">
-              <th className="px-4 py-2 text-left">Title</th>
-              <th className="px-4 py-2 text-left">Category</th>
-              <th className="px-4 py-2 text-left">Status</th>
-              <th className="px-4 py-2 text-left">Applications</th>
-              <th className="px-4 py-2 text-left">Deadline</th>
-              <th className="px-4 py-2 text-left">Actions</th>
+            <tr className="bg-gray-50 text-gray-600 font-medium">
+              <th className="px-6 py-4 text-left">Internal Title</th>
+              <th className="px-6 py-4 text-left">Category</th>
+              <th className="px-6 py-4 text-left">Status</th>
+              <th className="px-6 py-4 text-left">Applicants</th>
+              <th className="px-6 py-4 text-left text-right">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-gray-100">
             {internships.map((internship) => (
-              <tr key={internship.id} className="border-t">
-                <td className="px-4 py-2">{internship.title}</td>
-                <td className="px-4 py-2">{internship.category}</td>
-                <td className="px-4 py-2">
-                  <span className={`px-2 py-1 rounded text-sm ${
-                    internship.status === 'OPEN' ? 'bg-green-100 text-green-800' :
-                    internship.status === 'CLOSED' ? 'bg-red-100 text-red-800' :
-                    'bg-gray-100 text-gray-800'
+              <tr key={internship.id} className="hover:bg-gray-50 transition-colors">
+                <td className="px-6 py-4">
+                  <div className="font-semibold text-gray-900">{internship.title}</div>
+                  <div className="text-xs text-gray-500 uppercase">{internship.locationType} • {internship.location}</div>
+                </td>
+                <td className="px-6 py-4">
+                  <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium">
+                    {internship.category}
+                  </span>
+                </td>
+                <td className="px-6 py-4">
+                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${
+                    internship.status === 'OPEN' 
+                      ? 'bg-green-50 text-green-700 border-green-100' 
+                      : 'bg-red-50 text-red-700 border-red-100'
                   }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${internship.status === 'OPEN' ? 'bg-green-500' : 'bg-red-500'}`}></span>
                     {internship.status}
                   </span>
                 </td>
-                <td className="px-4 py-2">{internship.applications?.length || 0}</td>
-                <td className="px-4 py-2">{new Date(internship.applicationDeadline).toLocaleDateString()}</td>
-                <td className="px-4 py-2">
-                  <button className="text-blue-600 hover:text-blue-800 mr-2">View</button>
-                  <button className="text-green-600 hover:text-green-800 mr-2">Edit</button>
-                  <button className="text-red-600 hover:text-red-800">Delete</button>
+                <td className="px-6 py-4">
+                   <span className="font-bold text-gray-900">{internship.applications?.length || 0}</span>
+                </td>
+                <td className="px-6 py-4 text-right">
+                  <div className="flex justify-end gap-3">
+                    <button 
+                      onClick={() => setViewingInternship(internship)}
+                      className="text-gray-400 hover:text-blue-600 transition-colors p-1"
+                      title="View"
+                    >
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setEditingInternship(internship);
+                        setShowPostForm(true);
+                      }}
+                      className="text-gray-400 hover:text-indigo-600 transition-colors p-1"
+                      title="Edit"
+                    >
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+                    <button 
+                      onClick={() => handleDeleteInternship(internship.id)}
+                      className="text-gray-400 hover:text-red-600 transition-colors p-1"
+                      title="Delete"
+                    >
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -145,6 +237,8 @@ const ProviderDashboard = () => {
       </div>
     </div>
   );
+
+
 
   const renderApplications = () => (
     <div className="bg-white rounded-lg shadow-md p-6">
@@ -292,123 +386,182 @@ const ProviderDashboard = () => {
         {activeTab === 'profile' && renderCompanyProfile()}
       </div>
 
-      {/* Post Internship Modal */}
+      {/* Post/Edit Modal */}
       {showPostForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center overflow-y-auto">
-          <div className="bg-white p-6 rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto">
-            <h2 className="text-2xl font-bold mb-6">Post New Internship</h2>
-            <form onSubmit={(e) => { e.preventDefault(); handlePostInternship(new FormData(e.target)); }}>
-              <div className="space-y-6">
-                {/* Basic Details */}
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">🔹 Basic Details</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input name="title" placeholder="Internship Title" required className="w-full p-2 border rounded" />
-                    <input name="companyName" placeholder="Company Name" required className="w-full p-2 border rounded" />
-                    <select name="category" required className="w-full p-2 border rounded">
-                      <option value="">Select Category</option>
-                      <option value="IT">IT</option>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full my-8">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+              <h2 className="text-xl font-bold text-gray-900">
+                {editingInternship ? 'Edit Internship' : 'Post New Internship'}
+              </h2>
+              <button 
+                onClick={() => { setShowPostForm(false); setEditingInternship(null); }}
+                className="text-gray-400 hover:text-gray-600 p-2"
+              >
+                &times;
+              </button>
+            </div>
+
+            <form onSubmit={handlePostInternship} className="p-6">
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Internship Title</label>
+                    <input name="title" defaultValue={editingInternship?.title} placeholder="e.g. Frontend Developer" required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-600 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Company Display Name</label>
+                    <input name="companyName" defaultValue={editingInternship?.companyName} placeholder="Your Brand Name" required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-600 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">City / Location</label>
+                    <input name="location" defaultValue={editingInternship?.location} placeholder="e.g. Kathmandu, Nepal" required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-600 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Category</label>
+                    <select name="category" defaultValue={editingInternship?.category || ""} required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-600 outline-none">
+                      <option value="IT">IT & Software</option>
                       <option value="Marketing">Marketing</option>
                       <option value="Finance">Finance</option>
                       <option value="Design">Design</option>
-                      <option value="HR">HR</option>
+                      <option value="HR">Human Resources</option>
                     </select>
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium">Internship Type</label>
-                      <div className="flex space-x-4">
-                        <label><input type="radio" name="type" value="Paid" required /> Paid</label>
-                        <label><input type="radio" name="type" value="Unpaid" /> Unpaid</label>
-                      </div>
-                      <div className="flex space-x-4">
-                        <label><input type="radio" name="locationType" value="Remote" required /> Remote</label>
-                        <label><input type="radio" name="locationType" value="Onsite" /> Onsite</label>
-                        <label><input type="radio" name="locationType" value="Hybrid" /> Hybrid</label>
-                      </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Location Type</label>
+                    <div className="flex gap-4 pt-2">
+                       {['Remote', 'Onsite', 'Hybrid'].map(loc => (
+                         <label key={loc} className="flex items-center gap-2 cursor-pointer">
+                           <input type="radio" name="locationType" value={loc} defaultChecked={editingInternship?.locationType === loc} required className="text-blue-600" />
+                           <span className="text-sm font-medium">{loc}</span>
+                         </label>
+                       ))}
                     </div>
                   </div>
-                </div>
-
-                {/* Duration & Schedule */}
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">🔹 Duration & Schedule</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <select name="duration" required className="w-full p-2 border rounded">
-                      <option value="">Select Duration</option>
-                      <option value="1 month">1 month</option>
-                      <option value="3 months">3 months</option>
-                      <option value="6 months">6 months</option>
-                    </select>
-                    <input name="startDate" type="date" required className="w-full p-2 border rounded" />
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium">Working Hours</label>
-                      <div className="flex space-x-4">
-                        <label><input type="radio" name="workingHours" value="Full-time" required /> Full-time</label>
-                        <label><input type="radio" name="workingHours" value="Part-time" /> Part-time</label>
-                      </div>
-                    </div>
-                    <input name="hoursPerDay" type="number" placeholder="Hours per day" required className="w-full p-2 border rounded" />
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Application Deadline</label>
+                    <input name="applicationDeadline" defaultValue={editingInternship?.applicationDeadline ? editingInternship.applicationDeadline.split('T')[0] : ""} type="date" required className="w-full px-4 py-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-600" />
                   </div>
                 </div>
 
-                {/* Stipend & Benefits */}
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">🔹 Stipend & Benefits</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input name="stipend" type="number" placeholder="Stipend Amount" className="w-full p-2 border rounded" />
-                    <div className="space-y-2">
-                      <label><input type="checkbox" name="certificate" /> Certificate Provided</label>
-                      <label><input type="checkbox" name="jobOffer" /> Job Offer After Internship</label>
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">About Internship (Description)</label>
+                    <textarea name="aboutInternship" defaultValue={editingInternship?.aboutInternship} placeholder="Briefly describe the role..." required rows="4" className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-600 outline-none"></textarea>
                   </div>
-                  <textarea name="otherBenefits" placeholder="Other Benefits (e.g., Flexible hours, Learning resources, Mentorship)" className="w-full p-2 border rounded mt-2"></textarea>
-                </div>
-
-                {/* Skills & Eligibility */}
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">🔹 Skills & Eligibility</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <textarea name="requiredSkills" placeholder="Required Skills (comma-separated)" required className="w-full p-2 border rounded"></textarea>
-                    <select name="educationLevel" required className="w-full p-2 border rounded">
-                      <option value="">Education Level</option>
-                      <option value="+2">+2</option>
-                      <option value="Bachelor">Bachelor</option>
-                      <option value="Any">Any</option>
-                    </select>
-                    <select name="experienceRequired" required className="w-full p-2 border rounded">
-                      <option value="">Experience Required</option>
-                      <option value="Fresher">Fresher</option>
-                      <option value="Basic knowledge">Basic knowledge</option>
-                    </select>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Requirements</label>
+                    <textarea name="requirements" defaultValue={editingInternship?.requirements} placeholder="What are you looking for?" required rows="4" className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-600 outline-none"></textarea>
                   </div>
                 </div>
 
-                {/* Internship Description */}
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">🔹 Internship Description</h3>
-                  <textarea name="aboutInternship" placeholder="About the Internship" required className="w-full p-2 border rounded mb-2"></textarea>
-                  <textarea name="rolesResponsibilities" placeholder="Roles & Responsibilities" required className="w-full p-2 border rounded mb-2"></textarea>
-                  <textarea name="whatInternWillLearn" placeholder="What Intern Will Learn" required className="w-full p-2 border rounded"></textarea>
-                </div>
-
-                {/* Application Details */}
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">🔹 Application Details</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input name="numberOfOpenings" type="number" placeholder="Number of Openings" required className="w-full p-2 border rounded" />
-                    <input name="applicationDeadline" type="date" required className="w-full p-2 border rounded" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Duration</label>
+                    <input name="duration" defaultValue={editingInternship?.duration} placeholder="e.g. 3 months" required className="w-full px-4 py-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-600" />
                   </div>
-                  <textarea name="selectionProcess" placeholder="Selection Process (e.g., Resume screening, Interview, Task)" required className="w-full p-2 border rounded mt-2"></textarea>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Monthly Stipend (Optional)</label>
+                    <input name="stipend" defaultValue={editingInternship?.stipend} type="number" placeholder="₹ per month" className="w-full px-4 py-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-600" />
+                  </div>
                 </div>
 
-                <div className="flex space-x-2">
-                  <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Publish</button>
-                  <button type="button" onClick={() => setShowPostForm(false)} className="bg-gray-500 text-white px-4 py-2 rounded">Cancel</button>
+                <div className="pt-6 border-t flex flex-col sm:flex-row gap-3">
+                  <button type="submit" className="flex-1 bg-blue-600 text-white py-2.5 rounded-lg font-bold hover:bg-blue-700 transition-all cursor-pointer">
+                    {editingInternship ? 'Save Changes' : 'Post Internship'}
+                  </button>
+                  <button type="button" onClick={() => { setShowPostForm(false); setEditingInternship(null); }} className="flex-1 bg-gray-100 text-gray-600 py-2.5 rounded-lg font-bold hover:bg-gray-200 transition-all cursor-pointer">
+                    Cancel
+                  </button>
                 </div>
               </div>
             </form>
           </div>
         </div>
       )}
+
+
+
+      {/* View Modal */}
+      {viewingInternship && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full my-auto">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+              <h2 className="text-xl font-bold text-gray-900">Internship Details</h2>
+              <button onClick={() => setViewingInternship(null)} className="text-gray-400 hover:text-gray-600 p-2">
+                &times;
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900">{viewingInternship.title}</h3>
+                <p className="text-blue-600 font-semibold">{viewingInternship.companyName}</p>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase">Location</p>
+                  <p className="text-sm font-semibold">{viewingInternship.locationType}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase">Duration</p>
+                  <p className="text-sm font-semibold">{viewingInternship.duration}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase">Stipend</p>
+                  <p className="text-sm font-semibold">{viewingInternship.stipend ? `₹${viewingInternship.stipend}` : 'Unpaid'}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase">Category</p>
+                  <p className="text-sm font-semibold">{viewingInternship.category}</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <h4 className="text-xs font-bold text-gray-900 uppercase mb-1">About the Internship</h4>
+                  <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">{viewingInternship.aboutInternship}</p>
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-gray-900 uppercase mb-1">Requirements</h4>
+                  <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">{viewingInternship.requirements}</p>
+                </div>
+                {viewingInternship.requiredSkills && (
+                  <div>
+                    <h4 className="text-xs font-bold text-gray-900 uppercase mb-1">Skills Required</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {viewingInternship.requiredSkills.split(',').map((skill, i) => (
+                        <span key={i} className="px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs font-medium">
+                          {skill.trim()}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+
+              <button 
+                onClick={() => {
+                  setEditingInternship(viewingInternship);
+                  setViewingInternship(null);
+                  setShowPostForm(true);
+                }}
+                className="w-full bg-gray-900 text-white py-3 rounded-lg font-bold hover:bg-black transition-colors cursor-pointer"
+              >
+                Edit This Posting
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+
     </div>
   );
 };
