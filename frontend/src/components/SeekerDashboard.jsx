@@ -27,6 +27,8 @@ const SeekerDashboard = () => {
     githubUrl: '',
     linkedinUrl: ''
   });
+  const [viewingInternship, setViewingInternship] = useState(null);
+  const [viewingCompanyProfile, setViewingCompanyProfile] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -150,6 +152,16 @@ const SeekerDashboard = () => {
     }
   };
 
+  const fetchCompanyProfile = async (companyId) => {
+    try {
+      const res = await api.get(`/company/${companyId}`);
+      setViewingCompanyProfile(res.data.data.company);
+    } catch (error) {
+      console.error('Error fetching company profile:', error);
+      alert('Failed to load company profile.');
+    }
+  };
+
   const handleEditProfile = () => {
     setIsEditingProfile(true);
   };
@@ -240,16 +252,24 @@ const SeekerDashboard = () => {
                 <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">{internship.duration}</span>
               </div>
             </div>
-            <div className="flex justify-between items-center">
-              <div className="text-blue-700 font-medium">
-                {internship.stipend ? `₹${internship.stipend}/month` : 'Unpaid'}
+            <div className="flex justify-between items-center mt-auto">
+              <div className="text-blue-700 font-bold">
+                {internship.stipend ? `₹${internship.stipend}/mo` : 'Unpaid'}
               </div>
-              <button
-                onClick={() => handleApply(internship.id)}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-              >
-                Apply Now
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setViewingInternship(internship)}
+                  className="bg-white text-blue-600 border border-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors text-sm font-bold"
+                >
+                  View Details
+                </button>
+                <button
+                  onClick={() => handleApply(internship.id)}
+                  className="bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition-colors text-sm font-bold shadow-sm"
+                >
+                  Apply
+                </button>
+              </div>
             </div>
           </div>
         ))}
@@ -647,6 +667,209 @@ const SeekerDashboard = () => {
         {activeTab === 'notifications' && renderNotifications()}
         {activeTab === 'profile' && renderProfile()}
       </div>
+
+      {/* Internship Details Modal */}
+      {viewingInternship && (
+        <div className="fixed inset-0 bg-blue-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full my-auto animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh]">
+            <div className="px-8 py-6 border-b border-blue-50 flex justify-between items-center bg-blue-50/30 flex-shrink-0">
+              <div>
+                <h2 className="text-2xl font-black text-blue-900">Internship Details</h2>
+                <p className="text-blue-600 text-sm font-medium">Opportunity at {viewingInternship.provider?.companyName || viewingInternship.companyName}</p>
+              </div>
+              <button onClick={() => setViewingInternship(null)} className="text-blue-400 hover:text-blue-600 p-2 bg-white rounded-full shadow-sm transition-all text-xl font-bold">&times;</button>
+            </div>
+            
+            <div className="p-8 space-y-8 overflow-y-auto">
+              <div>
+                 <div className="flex flex-wrap gap-2 mb-4">
+                    <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full uppercase tracking-tighter">{viewingInternship.category}</span>
+                    <span className="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full uppercase tracking-tighter">{viewingInternship.locationType}</span>
+                    <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full uppercase tracking-tighter">{viewingInternship.stipend ? 'Paid' : 'Unpaid'}</span>
+                 </div>
+                 <h3 className="text-3xl font-black text-gray-900 leading-tight mb-2">{viewingInternship.title}</h3>
+                 <div className="flex items-center gap-2 text-blue-600 font-bold">
+                    <button 
+                      onClick={() => fetchCompanyProfile(viewingInternship.providerId)}
+                      className="hover:underline cursor-pointer text-left"
+                    >
+                      {viewingInternship.provider?.companyName || viewingInternship.companyName}
+                    </button>
+                    <span className="w-1.5 h-1.5 bg-blue-200 rounded-full"></span>
+                    <span className="text-gray-500 font-medium">{viewingInternship.location}</span>
+                 </div>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-blue-50/50 p-6 rounded-2xl flex-shrink-0">
+                <div>
+                  <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">Duration</p>
+                  <p className="text-sm font-bold text-blue-900">{viewingInternship.duration}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">Stipend</p>
+                  <p className="text-sm font-bold text-blue-900">{viewingInternship.stipend ? `₹${viewingInternship.stipend}` : 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">Deadline</p>
+                  <p className="text-sm font-bold text-blue-900">{new Date(viewingInternship.applicationDeadline).toLocaleDateString()}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">Date Posted</p>
+                  <p className="text-sm font-bold text-blue-900">{new Date(viewingInternship.createdAt).toLocaleDateString()}</p>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <section>
+                  <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <span className="w-8 h-[2px] bg-blue-600"></span> About the Role
+                  </h4>
+                  <p className="text-gray-600 leading-relaxed text-sm whitespace-pre-wrap">{viewingInternship.aboutInternship || viewingInternship.description}</p>
+                </section>
+
+                <section>
+                  <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <span className="w-8 h-[2px] bg-blue-600"></span> Requirements
+                  </h4>
+                  <p className="text-gray-600 leading-relaxed text-sm whitespace-pre-wrap">{viewingInternship.requirements}</p>
+                </section>
+
+                {viewingInternship.requiredSkills && (
+                  <section>
+                    <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                      <span className="w-8 h-[2px] bg-blue-600"></span> Skills Preferred
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {viewingInternship.requiredSkills.split(',').map((skill, i) => (
+                        <span key={i} className="px-3 py-1.5 bg-white border border-blue-100 text-blue-600 rounded-xl text-xs font-bold shadow-sm">
+                          {skill.trim()}
+                        </span>
+                      ))}
+                    </div>
+                  </section>
+                )}
+              </div>
+            </div>
+
+            <div className="p-8 border-t border-blue-50 bg-gray-50/50 flex gap-4 flex-shrink-0">
+              <button 
+                onClick={() => setViewingInternship(null)}
+                className="flex-1 px-6 py-4 border border-blue-200 text-blue-700 rounded-2xl font-black hover:bg-white transition-all tracking-tight"
+              >
+                Close
+              </button>
+              <button 
+                onClick={() => {
+                  handleApply(viewingInternship.id);
+                  setViewingInternship(null);
+                }}
+                className="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-black hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all tracking-tight"
+              >
+                Apply Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Company Profile Modal */}
+      {viewingCompanyProfile && (
+        <div className="fixed inset-0 bg-blue-900/60 backdrop-blur-md flex items-center justify-center z-[60] p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full my-auto animate-in fade-in slide-in-from-bottom-8 duration-300 overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="relative h-48 bg-gradient-to-r from-blue-600 to-indigo-700 flex-shrink-0">
+               <button 
+                 onClick={() => setViewingCompanyProfile(null)}
+                 className="absolute top-6 right-6 z-10 bg-white/20 hover:bg-white/40 text-white p-2 rounded-full backdrop-blur-md transition-all font-bold text-xl w-10 h-10 flex items-center justify-center"
+               >
+                 &times;
+               </button>
+               <div className="absolute -bottom-12 left-12 p-2 bg-white rounded-2xl shadow-xl">
+                  <div className="w-24 h-24 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 text-4xl font-black border border-blue-100">
+                    {viewingCompanyProfile.companyName.charAt(0)}
+                  </div>
+               </div>
+            </div>
+            
+            <div className="pt-16 px-12 pb-12 overflow-y-auto">
+              <div className="flex justify-between items-start mb-8">
+                <div>
+                  <h2 className="text-4xl font-black text-gray-900 mb-1">{viewingCompanyProfile.companyName}</h2>
+                  <p className="text-blue-600 font-bold text-lg">{viewingCompanyProfile.industry}</p>
+                  <div className="flex gap-4 mt-4 text-sm text-gray-500 font-medium">
+                     <span className="flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        {viewingCompanyProfile.location}
+                     </span>
+                     <span className="flex items-center gap-1 hover:text-blue-600 transition-colors">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.172 13.828a4 4 0 015.656 0l4-4a4 4 0 115.656 5.656l-1.102 1.101" /></svg>
+                        <a href={viewingCompanyProfile.website} target="_blank" rel="noopener noreferrer">{viewingCompanyProfile.website}</a>
+                     </span>
+                  </div>
+                </div>
+                <div className="bg-blue-50 px-6 py-3 rounded-2xl border border-blue-100 text-center">
+                   <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">Company Size</p>
+                   <p className="font-bold text-blue-900">{viewingCompanyProfile.companySize || 'Private Limited'}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                <div className="lg:col-span-2 space-y-10">
+                  <section>
+                    <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                       <span className="w-8 h-[2px] bg-blue-600"></span> About the Company
+                    </h4>
+                    <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{viewingCompanyProfile.description}</p>
+                  </section>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                     <section className="bg-blue-50/30 p-6 rounded-2xl border border-blue-50">
+                        <h4 className="text-xs font-black text-blue-400 uppercase tracking-widest mb-3">Our Mission</h4>
+                        <p className="text-gray-600 text-sm italic">"{viewingCompanyProfile.mission}"</p>
+                     </section>
+                     <section className="bg-indigo-50/30 p-6 rounded-2xl border border-indigo-50">
+                        <h4 className="text-xs font-black text-indigo-400 uppercase tracking-widest mb-3">Our Vision</h4>
+                        <p className="text-gray-600 text-sm italic">"{viewingCompanyProfile.vision}"</p>
+                     </section>
+                  </div>
+
+                  {viewingCompanyProfile.culture && (
+                    <section>
+                      <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                         <span className="w-8 h-[2px] bg-blue-600"></span> Culture & Values
+                      </h4>
+                      <p className="text-gray-600 leading-relaxed text-sm">{viewingCompanyProfile.culture}</p>
+                    </section>
+                  )}
+                </div>
+
+                <div className="space-y-8">
+                   <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
+                      <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Recent Openings</h4>
+                      <div className="space-y-4">
+                        {(viewingCompanyProfile.internships || []).map(intern => (
+                           <div key={intern.id} className="group cursor-pointer">
+                              <h5 className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{intern.title}</h5>
+                              <p className="text-xs text-gray-500">{intern.location} • {new Date(intern.createdAt).toLocaleDateString()}</p>
+                           </div>
+                        ))}
+                        {(!viewingCompanyProfile.internships || viewingCompanyProfile.internships.length === 0) && (
+                          <p className="text-sm text-gray-400 italic">No active openings at the moment.</p>
+                        )}
+                      </div>
+                   </div>
+
+                   {viewingCompanyProfile.benefits && (
+                      <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-6 text-white shadow-xl shadow-blue-100">
+                        <h4 className="text-xs font-black opacity-60 uppercase tracking-widest mb-4">Why Join Us?</h4>
+                        <p className="text-sm leading-relaxed">{viewingCompanyProfile.benefits}</p>
+                      </div>
+                   )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

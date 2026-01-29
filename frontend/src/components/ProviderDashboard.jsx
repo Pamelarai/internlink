@@ -16,6 +16,7 @@ const ProviderDashboard = () => {
   const [editingInternship, setEditingInternship] = useState(null);
   const [viewingInternship, setViewingInternship] = useState(null);
   const [reloadTrigger, setReloadTrigger] = useState(0);
+  const [viewingInternProfile, setViewingInternProfile] = useState(null);
   const [companyProfile, setCompanyProfile] = useState(null);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileForm, setProfileForm] = useState({
@@ -167,6 +168,16 @@ const ProviderDashboard = () => {
     }
   };
 
+  const fetchInternProfile = async (internId) => {
+    try {
+      const res = await api.get(`/intern/${internId}`);
+      setViewingInternProfile(res.data.data.profile);
+    } catch (error) {
+      console.error('Error fetching intern profile:', error);
+      alert('Failed to load intern profile.');
+    }
+  };
+
   const renderOverview = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       <div className="bg-white p-6 rounded-lg shadow-md">
@@ -297,9 +308,14 @@ const ProviderDashboard = () => {
           <div key={application.id} className="border rounded-lg p-4">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="font-semibold">{application.intern.user.email}</h3>
+                <button 
+                  onClick={() => fetchInternProfile(application.internId)}
+                  className="font-bold text-lg text-blue-600 hover:underline cursor-pointer text-left"
+                >
+                  {application.intern.fullName || application.intern.user.email}
+                </button>
                 <p className="text-sm text-gray-600">{application.intern.university} - {application.intern.major}</p>
-                <p className="text-sm text-gray-600">Applied for: {application.internship.title}</p>
+                <p className="text-sm text-gray-600 font-medium mt-1">Applied for: <span className="text-gray-900">{application.internship.title}</span></p>
               </div>
               <div className="flex space-x-2">
                 <button
@@ -829,6 +845,112 @@ const ProviderDashboard = () => {
 
 
 
+      {/* Intern Profile Modal */}
+      {viewingInternProfile && (
+        <div className="fixed inset-0 bg-blue-900/60 backdrop-blur-md flex items-center justify-center z-[60] p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full my-auto animate-in fade-in zoom-in duration-300 overflow-hidden">
+            <div className="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+              <div>
+                <h2 className="text-2xl font-black text-gray-900">Intern Profile</h2>
+                <p className="text-blue-600 font-bold uppercase tracking-widest text-[10px]">Applicant Details</p>
+              </div>
+              <button 
+                onClick={() => setViewingInternProfile(null)}
+                className="text-gray-400 hover:text-gray-600 text-3xl font-bold p-2"
+              >
+                &times;
+              </button>
+            </div>
+            
+            <div className="p-10 space-y-10 max-h-[70vh] overflow-y-auto">
+               <div className="flex items-center gap-6">
+                  <div className="w-24 h-24 bg-blue-600 rounded-2xl flex items-center justify-center text-white text-4xl font-black shadow-lg shadow-blue-100">
+                    {viewingInternProfile.fullName.charAt(0)}
+                  </div>
+                  <div>
+                    <h3 className="text-3xl font-black text-gray-900 mb-1">{viewingInternProfile.fullName}</h3>
+                    <p className="text-gray-500 font-medium">{viewingInternProfile.university}</p>
+                    <p className="text-blue-600 text-sm font-bold uppercase tracking-wider">{viewingInternProfile.major}</p>
+                  </div>
+               </div>
+
+               <div className="grid grid-cols-2 gap-8 bg-blue-50/50 p-6 rounded-2xl border border-blue-50">
+                  <div>
+                    <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">Graduation</p>
+                    <p className="font-bold text-blue-900">{viewingInternProfile.graduationYear || 'Not provided'}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">Email</p>
+                    <p className="font-bold text-blue-900">{viewingInternProfile.user?.email}</p>
+                  </div>
+               </div>
+
+               {viewingInternProfile.bio && (
+                 <section>
+                    <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                       <span className="w-8 h-[2px] bg-blue-600"></span> Bio
+                    </h4>
+                    <p className="text-gray-600 leading-relaxed text-sm whitespace-pre-wrap">{viewingInternProfile.bio}</p>
+                 </section>
+               )}
+
+               <section>
+                  <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                     <span className="w-8 h-[2px] bg-blue-600"></span> Skills & Interests
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {viewingInternProfile.skills ? viewingInternProfile.skills.split(',').map((skill, i) => (
+                      <span key={i} className="px-3 py-1.5 bg-white border border-blue-100 text-blue-700 rounded-xl text-xs font-bold shadow-sm">
+                        {skill.trim()}
+                      </span>
+                    )) : (
+                      <p className="text-sm text-gray-400 italic">No skills listed.</p>
+                    )}
+                  </div>
+               </section>
+
+               {(viewingInternProfile.resumeUrl || viewingInternProfile.portfolioUrl || viewingInternProfile.githubUrl || viewingInternProfile.linkedinUrl) && (
+                 <section>
+                    <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                       <span className="w-8 h-[2px] bg-blue-600"></span> Professional Links
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {viewingInternProfile.resumeUrl && (
+                        <a href={viewingInternProfile.resumeUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 bg-blue-600 text-white p-3 rounded-xl font-bold text-sm hover:bg-blue-700 transition-all shadow-md shadow-blue-100">
+                          📄 View Resume
+                        </a>
+                      )}
+                      {viewingInternProfile.portfolioUrl && (
+                        <a href={viewingInternProfile.portfolioUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-700 p-3 rounded-xl font-bold text-sm hover:bg-gray-50 transition-all">
+                          🌐 Portfolio
+                        </a>
+                      )}
+                      {viewingInternProfile.githubUrl && (
+                        <a href={viewingInternProfile.githubUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 bg-gray-900 text-white p-3 rounded-xl font-bold text-sm hover:bg-black transition-all">
+                          GitHub
+                        </a>
+                      )}
+                      {viewingInternProfile.linkedinUrl && (
+                        <a href={viewingInternProfile.linkedinUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 bg-[#0077b5] text-white p-3 rounded-xl font-bold text-sm hover:bg-[#006396] transition-all">
+                          LinkedIn
+                        </a>
+                      )}
+                    </div>
+                 </section>
+               )}
+            </div>
+
+            <div className="p-8 border-t border-gray-100 bg-gray-50/50">
+               <button 
+                 onClick={() => setViewingInternProfile(null)}
+                 className="w-full bg-white border-2 border-gray-200 text-gray-900 py-3 rounded-2xl font-black hover:border-gray-900 transition-all"
+               >
+                 Close Profile
+               </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -76,3 +76,31 @@ export const updateInternProfile = async (req, res) => {
 		return sendError(res, 'Server error', 500)
 	}
 }
+
+// Get intern profile (for providers to view)
+export const getInternProfile = async (req, res) => {
+	try {
+		const { internId } = req.params
+
+		const profile = await prisma.internProfile.findUnique({
+			where: { id: parseInt(internId) },
+			include: {
+				user: {
+					select: {
+						email: true,
+						createdAt: true
+					}
+				}
+			}
+		})
+
+		if (!profile) {
+			return sendError(res, 'Intern profile not found', 404)
+		}
+
+		return sendSuccess(res, { profile }, 'Intern profile retrieved successfully')
+	} catch (err) {
+		console.error('Get intern profile error:', err)
+		return sendError(res, 'Server error', 500)
+	}
+}
