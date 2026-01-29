@@ -36,17 +36,33 @@ model InternProfile {
   university     String
   major          String
   graduationYear Int?
+  skills         String? @db.Text
+  bio            String? @db.Text
+  resumeUrl      String?
+  portfolioUrl   String?
+  githubUrl      String?
+  linkedinUrl    String?
   applications   Application[]
 }
 
 model ProviderProfile {
-  id          Int    @id @default(autoincrement())
-  user        User   @relation(fields: [userId], references: [id])
-  userId      Int    @unique
-  companyName String
-  industry    String
-  website     String?
-  internships Internship[]
+  id           Int    @id @default(autoincrement())
+  user         User   @relation(fields: [userId], references: [id])
+  userId       Int    @unique
+  companyName  String
+  industry     String
+  website      String?
+  description  String? @db.Text
+  logo         String?
+  location     String?
+  companySize  String?
+  foundedYear  Int?
+  socialLinks  String? @db.Text // Store as JSON string or plain text
+  mission      String? @db.Text
+  vision       String? @db.Text
+  culture      String? @db.Text
+  benefits     String? @db.Text
+  internships  Internship[]
 }
 
 model Internship {

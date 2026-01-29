@@ -20,7 +20,12 @@ const SeekerDashboard = () => {
     university: '',
     major: '',
     graduationYear: '',
-    skills: ''
+    skills: '',
+    bio: '',
+    resumeUrl: '',
+    portfolioUrl: '',
+    githubUrl: '',
+    linkedinUrl: ''
   });
 
   useEffect(() => {
@@ -36,7 +41,7 @@ const SeekerDashboard = () => {
             api.get('/internships'),
             api.get('/applications/intern'),
             api.get('/notifications'),
-            api.get('/intern/my/profile').catch(() => ({ data: null })) // Handle case where profile doesn't exist yet
+            api.get('/intern/my/profile').catch(() => ({ data: { data: null } })) // Handle case where profile doesn't exist yet
           ]);
 
           setInternships(internshipsRes.data);
@@ -44,20 +49,31 @@ const SeekerDashboard = () => {
           setNotifications(notificationsRes.data);
 
           // Load profile data if it exists
-          if (profileRes.data && profileRes.data.profile) {
+          if (profileRes.data && profileRes.data.data && profileRes.data.data.profile) {
+            const profile = profileRes.data.data.profile;
             setProfileData({
-              fullName: profileRes.data.profile.fullName,
-              university: profileRes.data.profile.university,
-              major: profileRes.data.profile.major,
-              graduationYear: profileRes.data.profile.graduationYear,
-              skills: 'Programming, Problem Solving, Team Work' // Default skills since not in schema yet
+              fullName: profile.fullName,
+              university: profile.university,
+              major: profile.major,
+              graduationYear: profile.graduationYear,
+              skills: profile.skills || '',
+              bio: profile.bio || '',
+              resumeUrl: profile.resumeUrl || '',
+              portfolioUrl: profile.portfolioUrl || '',
+              githubUrl: profile.githubUrl || '',
+              linkedinUrl: profile.linkedinUrl || ''
             });
             setProfileForm({
-              fullName: profileRes.data.profile.fullName,
-              university: profileRes.data.profile.university,
-              major: profileRes.data.profile.major,
-              graduationYear: profileRes.data.profile.graduationYear || '',
-              skills: 'Programming, Problem Solving, Team Work'
+              fullName: profile.fullName,
+              university: profile.university,
+              major: profile.major,
+              graduationYear: profile.graduationYear || '',
+              skills: profile.skills || '',
+              bio: profile.bio || '',
+              resumeUrl: profile.resumeUrl || '',
+              portfolioUrl: profile.portfolioUrl || '',
+              githubUrl: profile.githubUrl || '',
+              linkedinUrl: profile.linkedinUrl || ''
             });
           }
 
@@ -99,20 +115,32 @@ const SeekerDashboard = () => {
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
     try {
-      await api.put('/intern/my/profile', {
-        fullName: profileForm.fullName,
-        university: profileForm.university,
-        major: profileForm.major,
-        graduationYear: profileForm.graduationYear
-      });
-
-      // Update local state with the saved data
-      setProfileData({
+      const res = await api.put('/intern/my/profile', {
         fullName: profileForm.fullName,
         university: profileForm.university,
         major: profileForm.major,
         graduationYear: profileForm.graduationYear,
-        skills: profileForm.skills
+        skills: profileForm.skills,
+        bio: profileForm.bio,
+        resumeUrl: profileForm.resumeUrl,
+        portfolioUrl: profileForm.portfolioUrl,
+        githubUrl: profileForm.githubUrl,
+        linkedinUrl: profileForm.linkedinUrl
+      });
+
+      const updatedProfile = res.data.data.profile;
+      // Update local state with the saved data
+      setProfileData({
+        fullName: updatedProfile.fullName,
+        university: updatedProfile.university,
+        major: updatedProfile.major,
+        graduationYear: updatedProfile.graduationYear,
+        skills: updatedProfile.skills || '',
+        bio: updatedProfile.bio || '',
+        resumeUrl: updatedProfile.resumeUrl || '',
+        portfolioUrl: updatedProfile.portfolioUrl || '',
+        githubUrl: updatedProfile.githubUrl || '',
+        linkedinUrl: updatedProfile.linkedinUrl || ''
       });
       setIsEditingProfile(false);
       alert('Profile updated successfully!');
@@ -364,8 +392,62 @@ const SeekerDashboard = () => {
               value={profileForm.skills}
               onChange={(e) => setProfileForm({...profileForm, skills: e.target.value})}
               className="w-full px-3 py-2 border border-blue-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="List your skills, interests, and what you're looking for in an internship..."
+              placeholder="List your skills, interests..."
             ></textarea>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-blue-700 mb-2">Short Bio (Optional)</label>
+            <textarea
+              rows="3"
+              value={profileForm.bio}
+              onChange={(e) => setProfileForm({...profileForm, bio: e.target.value})}
+              className="w-full px-3 py-2 border border-blue-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Tell us a bit about yourself..."
+            ></textarea>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-blue-700 mb-2">Resume Link (Optional)</label>
+              <input
+                type="url"
+                value={profileForm.resumeUrl}
+                onChange={(e) => setProfileForm({...profileForm, resumeUrl: e.target.value})}
+                className="w-full px-3 py-2 border border-blue-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Google Drive / Dropbox link"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-blue-700 mb-2">Portfolio/Website (Optional)</label>
+              <input
+                type="url"
+                value={profileForm.portfolioUrl}
+                onChange={(e) => setProfileForm({...profileForm, portfolioUrl: e.target.value})}
+                className="w-full px-3 py-2 border border-blue-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="https://yourportfolio.com"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-blue-700 mb-2">GitHub URL (Optional)</label>
+              <input
+                type="url"
+                value={profileForm.githubUrl}
+                onChange={(e) => setProfileForm({...profileForm, githubUrl: e.target.value})}
+                className="w-full px-3 py-2 border border-blue-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="https://github.com/username"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-blue-700 mb-2">LinkedIn URL (Optional)</label>
+              <input
+                type="url"
+                value={profileForm.linkedinUrl}
+                onChange={(e) => setProfileForm({...profileForm, linkedinUrl: e.target.value})}
+                className="w-full px-3 py-2 border border-blue-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="https://linkedin.com/in/username"
+              />
+            </div>
           </div>
           <div className="flex justify-end space-x-3">
             <button
@@ -423,9 +505,48 @@ const SeekerDashboard = () => {
               </div>
 
               <div className="mt-6">
-                <label className="block text-sm font-medium text-blue-700 mb-2">Skills & Interests</label>
+                <label className="block text-sm font-medium text-blue-700 mb-2">Bio</label>
                 <div className="bg-white p-4 rounded-md border border-blue-200">
-                  <p className="text-blue-900">{profileData.skills}</p>
+                  <p className="text-blue-900 whitespace-pre-wrap">{profileData.bio || 'Your bio will appear here.'}</p>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <label className="block text-sm font-medium text-blue-700 mb-2">Skills & Interests</label>
+                <div className="bg-white p-4 rounded-md border border-blue-200 flex flex-wrap gap-2">
+                  {profileData.skills ? profileData.skills.split(',').map((skill, i) => (
+                    <span key={i} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+                      {skill.trim()}
+                    </span>
+                  )) : (
+                    <p className="text-gray-400 italic text-sm">No skills added yet.</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <label className="block text-sm font-medium text-blue-700 mb-2">Professional Links</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {profileData.resumeUrl && (
+                    <a href={profileData.resumeUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 bg-white p-3 rounded-md border border-blue-200">
+                      📄 View Resume
+                    </a>
+                  )}
+                  {profileData.portfolioUrl && (
+                    <a href={profileData.portfolioUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 bg-white p-3 rounded-md border border-blue-200">
+                      🌐 Portfolio Website
+                    </a>
+                  )}
+                  {profileData.githubUrl && (
+                    <a href={profileData.githubUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 bg-white p-3 rounded-md border border-blue-200">
+                       GitHub Profile
+                    </a>
+                  )}
+                  {profileData.linkedinUrl && (
+                    <a href={profileData.linkedinUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 bg-white p-3 rounded-md border border-blue-200">
+                       LinkedIn Profile
+                    </a>
+                  )}
                 </div>
               </div>
             </div>

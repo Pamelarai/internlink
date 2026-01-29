@@ -16,6 +16,22 @@ const ProviderDashboard = () => {
   const [editingInternship, setEditingInternship] = useState(null);
   const [viewingInternship, setViewingInternship] = useState(null);
   const [reloadTrigger, setReloadTrigger] = useState(0);
+  const [companyProfile, setCompanyProfile] = useState(null);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileForm, setProfileForm] = useState({
+    companyName: '',
+    industry: '',
+    website: '',
+    description: '',
+    location: '',
+    companySize: '',
+    foundedYear: '',
+    mission: '',
+    vision: '',
+    logo: '',
+    culture: '',
+    benefits: ''
+  });
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -26,15 +42,35 @@ const ProviderDashboard = () => {
     } else {
       const loadDashboardData = async () => {
         try {
-          const [internshipsRes, applicationsRes, notificationsRes] = await Promise.all([
+          const [internshipsRes, applicationsRes, notificationsRes, profileRes] = await Promise.all([
             api.get('/internships/provider'),
             api.get('/applications/provider'),
-            api.get('/notifications')
+            api.get('/notifications'),
+            api.get('/company/my/profile').catch(() => ({ data: { data: null } }))
           ]);
-
+ 
           setInternships(internshipsRes.data);
           setApplications(applicationsRes.data);
           setNotifications(notificationsRes.data);
+
+          if (profileRes.data && profileRes.data.data && profileRes.data.data.company) {
+            const profile = profileRes.data.data.company;
+            setCompanyProfile(profile);
+            setProfileForm({
+              companyName: profile.companyName || '',
+              industry: profile.industry || '',
+              website: profile.website || '',
+              description: profile.description || '',
+              location: profile.location || '',
+              companySize: profile.companySize || '',
+              foundedYear: profile.foundedYear || '',
+              mission: profile.mission || '',
+              vision: profile.vision || '',
+              logo: profile.logo || '',
+              culture: profile.culture || '',
+              benefits: profile.benefits || ''
+            });
+          }
 
           // Calculate stats
           const totalInternships = internshipsRes.data.length;
@@ -115,6 +151,19 @@ const ProviderDashboard = () => {
       setReloadTrigger(prev => prev + 1);
     } catch (error) {
       console.error('Error updating application:', error);
+    }
+  };
+
+  const handleProfileUpdate = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await api.put('/company/my/profile', profileForm);
+      setCompanyProfile(res.data.data.company);
+      setIsEditingProfile(false);
+      alert('Company profile updated successfully!');
+    } catch (error) {
+      console.error('Error updating company profile:', error);
+      alert('Failed to update company profile.');
     }
   };
 
@@ -302,29 +351,247 @@ const ProviderDashboard = () => {
   );
 
   const renderCompanyProfile = () => (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">Company Profile</h2>
-      <form className="space-y-4">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Company Name</label>
-          <input type="text" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm" />
+          <h2 className="text-xl font-bold text-gray-900">Company Profile</h2>
+          <p className="text-sm text-gray-500">Manage your company's public information</p>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Industry</label>
-          <input type="text" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Website</label>
-          <input type="url" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Description</label>
-          <textarea className="mt-1 block w-full border-gray-300 rounded-md shadow-sm" rows="4"></textarea>
-        </div>
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-          Update Profile
-        </button>
-      </form>
+        {!isEditingProfile && (
+          <button
+            onClick={() => setIsEditingProfile(true)}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors cursor-pointer"
+          >
+            Edit Profile
+          </button>
+        )}
+      </div>
+
+      <div className="p-6">
+        {isEditingProfile ? (
+          <form onSubmit={handleProfileUpdate} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Company Name</label>
+                <input
+                  type="text"
+                  value={profileForm.companyName}
+                  onChange={(e) => setProfileForm({ ...profileForm, companyName: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-600 outline-none"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Industry</label>
+                <input
+                  type="text"
+                  value={profileForm.industry}
+                  onChange={(e) => setProfileForm({ ...profileForm, industry: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-600 outline-none"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Website</label>
+                <input
+                  type="url"
+                  value={profileForm.website}
+                  onChange={(e) => setProfileForm({ ...profileForm, website: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-600 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Location</label>
+                <input
+                  type="text"
+                  value={profileForm.location}
+                  onChange={(e) => setProfileForm({ ...profileForm, location: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-600 outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Company Size</label>
+                  <input
+                    type="text"
+                    value={profileForm.companySize}
+                    onChange={(e) => setProfileForm({ ...profileForm, companySize: e.target.value })}
+                    placeholder="e.g. 50-200"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-600 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Founded Year</label>
+                  <input
+                    type="number"
+                    value={profileForm.foundedYear}
+                    onChange={(e) => setProfileForm({ ...profileForm, foundedYear: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-600 outline-none"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Description</label>
+                <textarea
+                  value={profileForm.description}
+                  onChange={(e) => setProfileForm({ ...profileForm, description: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-600 outline-none"
+                  rows="4"
+                ></textarea>
+              </div>
+            </div>
+
+            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Mission</label>
+                <textarea
+                  value={profileForm.mission}
+                  onChange={(e) => setProfileForm({ ...profileForm, mission: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-600 outline-none"
+                  rows="2"
+                ></textarea>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Vision</label>
+                <textarea
+                  value={profileForm.vision}
+                  onChange={(e) => setProfileForm({ ...profileForm, vision: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-600 outline-none"
+                  rows="2"
+                ></textarea>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Company Culture (Optional)</label>
+                <textarea
+                  value={profileForm.culture}
+                  onChange={(e) => setProfileForm({ ...profileForm, culture: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-600 outline-none"
+                  rows="3"
+                  placeholder="Describe your work environment..."
+                ></textarea>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Benefits Offered (Optional)</label>
+                <textarea
+                  value={profileForm.benefits}
+                  onChange={(e) => setProfileForm({ ...profileForm, benefits: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-600 outline-none"
+                  rows="3"
+                  placeholder="e.g. Health insurance, flexible hours..."
+                ></textarea>
+              </div>
+            </div>
+
+            <div className="md:col-span-2 flex justify-end gap-3 pt-4 border-t">
+              <button
+                type="button"
+                onClick={() => setIsEditingProfile(false)}
+                className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-colors"
+              >
+                Save Changes
+              </button>
+            </div>
+          </form>
+        ) : (
+          companyProfile ? (
+            <div className="space-y-8">
+              <div className="flex items-center gap-6">
+                <div className="w-24 h-24 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 text-3xl font-bold border border-blue-100 shadow-sm">
+                  {companyProfile.logo ? (
+                    <img src={companyProfile.logo} alt={companyProfile.companyName} className="w-full h-full object-cover rounded-2xl" />
+                  ) : (
+                    companyProfile.companyName.charAt(0).toUpperCase()
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-900">{companyProfile.companyName}</h3>
+                  <p className="text-lg text-blue-600 font-medium">{companyProfile.industry}</p>
+                  <div className="flex gap-4 mt-2">
+                    {companyProfile.website && (
+                      <a href={companyProfile.website} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-500 hover:text-blue-600 flex items-center gap-1">
+                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.172 13.828a4 4 0 015.656 0l4-4a4 4 0 115.656 5.656l-1.102 1.101" /></svg>
+                        Website
+                      </a>
+                    )}
+                    {companyProfile.location && (
+                      <span className="text-sm text-gray-500 flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        {companyProfile.location}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="md:col-span-2 space-y-6">
+                  <div>
+                    <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-2">About the Company</h4>
+                    <p className="text-gray-600 leading-relaxed">{companyProfile.description || 'No description provided.'}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-2">Our Mission</h4>
+                      <p className="text-gray-600 text-sm italic">"{companyProfile.mission || 'To empower the next generation of talent.'}"</p>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-2">Our Vision</h4>
+                      <p className="text-gray-600 text-sm italic">"{companyProfile.vision || 'To be the world leader in innovation.'}"</p>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-2">Company Culture</h4>
+                    <p className="text-gray-600 leading-relaxed text-sm">{companyProfile.culture || 'A collaborative and innovative environment.'}</p>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-2">Benefits</h4>
+                    <p className="text-gray-600 leading-relaxed text-sm">{companyProfile.benefits || 'Competitive stipend and growth opportunities.'}</p>
+                  </div>
+                </div>
+                
+                <div className="bg-gray-50 rounded-xl p-6 border border-gray-100 h-fit">
+                  <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Quick Facts</h4>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-500">Company Size</span>
+                      <span className="font-semibold text-gray-900">{companyProfile.companySize || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-500">Founded</span>
+                      <span className="font-semibold text-gray-900">{companyProfile.foundedYear || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-500">Total Internships</span>
+                      <span className="font-semibold text-gray-900">{internships.length}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-12">
+               <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 text-4xl mx-auto mb-4">🏢</div>
+               <h3 className="text-xl font-bold text-gray-900 mb-2">Profile Not Set Up</h3>
+               <p className="text-gray-500 mb-6">Complete your company profile to start posting internships.</p>
+               <button
+                 onClick={() => setIsEditingProfile(true)}
+                 className="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors"
+               >
+                 Set Up Profile
+               </button>
+            </div>
+          )
+        )}
+      </div>
     </div>
   );
 

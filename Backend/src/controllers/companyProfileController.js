@@ -83,7 +83,9 @@ export const updateCompanyProfile = async (req, res) => {
 			foundedYear,
 			socialLinks,
 			mission,
-			vision
+			vision,
+			culture,
+			benefits
 		} = req.body
 
 		// Get the provider profile
@@ -110,7 +112,9 @@ export const updateCompanyProfile = async (req, res) => {
 				foundedYear: foundedYear ? parseInt(foundedYear) : user.providerProfile.foundedYear,
 				socialLinks: socialLinks || user.providerProfile.socialLinks,
 				mission: mission || user.providerProfile.mission,
-				vision: vision || user.providerProfile.vision
+				vision: vision || user.providerProfile.vision,
+				culture: culture || user.providerProfile.culture,
+				benefits: benefits || user.providerProfile.benefits
 			},
 			include: {
 				user: {

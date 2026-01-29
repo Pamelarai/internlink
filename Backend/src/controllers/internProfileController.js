@@ -23,7 +23,18 @@ export const getMyInternProfile = async (req, res) => {
 export const updateInternProfile = async (req, res) => {
 	try {
 		const userId = req.user.id
-		const { fullName, university, major, graduationYear, skills } = req.body
+		const {
+			fullName,
+			university,
+			major,
+			graduationYear,
+			skills,
+			bio,
+			resumeUrl,
+			portfolioUrl,
+			githubUrl,
+			linkedinUrl
+		} = req.body
 
 		if (!fullName || !university || !major) {
 			return sendError(res, 'Full name, university, and major are required', 400)
@@ -36,14 +47,25 @@ export const updateInternProfile = async (req, res) => {
 				university,
 				major,
 				graduationYear: graduationYear ? Number(graduationYear) : null,
-				// Note: We don't have a skills field in the schema yet, so we'll skip it for now
+				skills: skills || null,
+				bio: bio || null,
+				resumeUrl: resumeUrl || null,
+				portfolioUrl: portfolioUrl || null,
+				githubUrl: githubUrl || null,
+				linkedinUrl: linkedinUrl || null
 			},
 			create: {
 				userId,
 				fullName,
 				university,
 				major,
-				graduationYear: graduationYear ? Number(graduationYear) : null
+				graduationYear: graduationYear ? Number(graduationYear) : null,
+				skills: skills || null,
+				bio: bio || null,
+				resumeUrl: resumeUrl || null,
+				portfolioUrl: portfolioUrl || null,
+				githubUrl: githubUrl || null,
+				linkedinUrl: linkedinUrl || null
 			}
 		})
 
