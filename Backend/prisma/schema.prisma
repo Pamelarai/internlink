@@ -106,8 +106,12 @@ model Application {
   internship   Internship @relation(fields: [internshipId], references: [id])
   internId     Int
   intern       InternProfile @relation(fields: [internId], references: [id])
-  coverLetter  String
+  coverLetter  String     @db.Text
   resume       String
+  phoneNumber  String?
+  availability String?
+  portfolioUrl String?
+  githubUrl    String?
   status       String      @default("PENDING")
   createdAt    DateTime    @default(now())
 }

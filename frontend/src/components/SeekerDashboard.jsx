@@ -29,6 +29,15 @@ const SeekerDashboard = () => {
   });
   const [viewingInternship, setViewingInternship] = useState(null);
   const [viewingCompanyProfile, setViewingCompanyProfile] = useState(null);
+  const [applyingToInternship, setApplyingToInternship] = useState(null);
+  const [applicationForm, setApplicationForm] = useState({
+    coverLetter: '',
+    resume: '',
+    phoneNumber: '',
+    availability: '',
+    portfolioUrl: '',
+    githubUrl: ''
+  });
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -99,18 +108,34 @@ const SeekerDashboard = () => {
     }
   }, [reloadTrigger]);
 
-  const handleApply = async (internshipId) => {
+  const handleApply = (internship) => {
+    setApplyingToInternship(internship);
+    // Pre-fill with profile data if available
+    setApplicationForm({
+      coverLetter: '',
+      resume: profileData?.resumeUrl || '',
+      phoneNumber: '',
+      availability: '',
+      portfolioUrl: profileData?.portfolioUrl || '',
+      githubUrl: profileData?.githubUrl || ''
+    });
+  };
+
+  const submitApplication = async (e) => {
+    e.preventDefault();
     try {
       await api.post('/applications/apply', {
-        internshipId,
-        coverLetter: 'I am very interested in this internship opportunity.',
-        resume: 'resume.pdf'
+        internshipId: applyingToInternship.id,
+        ...applicationForm
       });
       setReloadTrigger(prev => prev + 1);
+      setApplyingToInternship(null);
       alert('Application submitted successfully!');
     } catch (error) {
       console.error('Error applying for internship:', error);
-      alert('Failed to apply. Please try again.');
+      const errorMsg = error.response?.data?.message || 'Failed to apply. Please try again.';
+      const errorDetails = error.response?.data?.details ? `\nDetails: ${error.response.data.details}` : '';
+      alert(`${errorMsg}${errorDetails}`);
     }
   };
 
@@ -264,7 +289,7 @@ const SeekerDashboard = () => {
                   View Details
                 </button>
                 <button
-                  onClick={() => handleApply(internship.id)}
+                  onClick={() => handleApply(internship)}
                   className="bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition-colors text-sm font-bold shadow-sm"
                 >
                   Apply
@@ -760,7 +785,7 @@ const SeekerDashboard = () => {
               </button>
               <button 
                 onClick={() => {
-                  handleApply(viewingInternship.id);
+                  handleApply(viewingInternship);
                   setViewingInternship(null);
                 }}
                 className="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-black hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all tracking-tight"
@@ -867,6 +892,116 @@ const SeekerDashboard = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Application Form Modal */}
+      {applyingToInternship && (
+        <div className="fixed inset-0 bg-blue-900/60 backdrop-blur-md flex items-center justify-center z-[70] p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full my-auto animate-in fade-in zoom-in duration-200 overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="px-8 py-6 border-b border-blue-50 flex justify-between items-center bg-blue-50/30">
+              <div>
+                <h2 className="text-2xl font-black text-blue-900">Apply for Internship</h2>
+                <p className="text-blue-600 text-sm font-medium">{applyingToInternship.title} at {applyingToInternship.provider?.companyName || applyingToInternship.companyName}</p>
+              </div>
+              <button onClick={() => setApplyingToInternship(null)} className="text-blue-400 hover:text-blue-600 p-2 bg-white rounded-full shadow-sm transition-all text-xl font-bold">&times;</button>
+            </div>
+
+            <form onSubmit={submitApplication} className="p-8 space-y-6 overflow-y-auto">
+              <div className="bg-blue-50/50 p-6 rounded-2xl border border-blue-50 mb-6">
+                <p className="text-sm text-blue-800 leading-relaxed font-medium">
+                  Provide detailed information to help the company trust your application and understand your skills better.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-black text-blue-400 uppercase tracking-widest mb-2">Cover Letter</label>
+                <textarea
+                  required
+                  rows="4"
+                  value={applicationForm.coverLetter}
+                  onChange={(e) => setApplicationForm({...applicationForm, coverLetter: e.target.value})}
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm"
+                  placeholder="Why are you a good fit for this role? Share your motivation and relevant experience."
+                ></textarea>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-xs font-black text-blue-400 uppercase tracking-widest mb-2">Resume URL</label>
+                  <input
+                    required
+                    type="url"
+                    value={applicationForm.resume}
+                    onChange={(e) => setApplicationForm({...applicationForm, resume: e.target.value})}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm"
+                    placeholder="Link to your resume (Google Drive, Dropbox, etc.)"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-black text-blue-400 uppercase tracking-widest mb-2">Phone Number</label>
+                  <input
+                    required
+                    type="tel"
+                    value={applicationForm.phoneNumber}
+                    onChange={(e) => setApplicationForm({...applicationForm, phoneNumber: e.target.value})}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm"
+                    placeholder="+91 1234567890"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-black text-blue-400 uppercase tracking-widest mb-2">Availability</label>
+                <input
+                  required
+                  type="text"
+                  value={applicationForm.availability}
+                  onChange={(e) => setApplicationForm({...applicationForm, availability: e.target.value})}
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm"
+                  placeholder="e.g., Immediate, From next month, Part-time"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-xs font-black text-blue-400 uppercase tracking-widest mb-2">Portfolio URL (Optional)</label>
+                  <input
+                    type="url"
+                    value={applicationForm.portfolioUrl}
+                    onChange={(e) => setApplicationForm({...applicationForm, portfolioUrl: e.target.value})}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm"
+                    placeholder="https://yourportfolio.com"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-black text-blue-400 uppercase tracking-widest mb-2">GitHub URL (Optional)</label>
+                  <input
+                    type="url"
+                    value={applicationForm.githubUrl}
+                    onChange={(e) => setApplicationForm({...applicationForm, githubUrl: e.target.value})}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm"
+                    placeholder="https://github.com/username"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-6 border-t border-blue-50 flex gap-4">
+                <button
+                  type="button"
+                  onClick={() => setApplyingToInternship(null)}
+                  className="flex-1 px-6 py-4 border border-blue-200 text-blue-700 rounded-2xl font-black hover:bg-blue-50 transition-all tracking-tight"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-black hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all tracking-tight"
+                >
+                  Submit Application
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

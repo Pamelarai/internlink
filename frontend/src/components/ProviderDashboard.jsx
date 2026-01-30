@@ -301,53 +301,124 @@ const ProviderDashboard = () => {
 
 
   const renderApplications = () => (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">Applications</h2>
-      <div className="space-y-4">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="px-6 py-5 border-b border-gray-100">
+        <h2 className="text-xl font-bold text-gray-900">Applications</h2>
+        <p className="text-sm text-gray-500">Review and manage internship applications</p>
+      </div>
+      <div className="p-6 space-y-6">
         {applications.map((application) => (
-          <div key={application.id} className="border rounded-lg p-4">
-            <div className="flex justify-between items-start">
-              <div>
-                <button 
-                  onClick={() => fetchInternProfile(application.internId)}
-                  className="font-bold text-lg text-blue-600 hover:underline cursor-pointer text-left"
-                >
-                  {application.intern.fullName || application.intern.user.email}
-                </button>
-                <p className="text-sm text-gray-600">{application.intern.university} - {application.intern.major}</p>
-                <p className="text-sm text-gray-600 font-medium mt-1">Applied for: <span className="text-gray-900">{application.internship.title}</span></p>
+          <div key={application.id} className="border border-gray-100 rounded-2xl p-6 bg-gray-50/30 hover:shadow-md transition-shadow">
+            <div className="flex flex-col lg:flex-row justify-between gap-6">
+              <div className="flex-1 space-y-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white text-xl font-bold">
+                    {application.intern.fullName?.charAt(0) || 'U'}
+                  </div>
+                  <div>
+                    <button 
+                      onClick={() => fetchInternProfile(application.internId)}
+                      className="font-bold text-lg text-gray-900 hover:text-blue-600 transition-colors cursor-pointer text-left"
+                    >
+                      {application.intern.fullName || application.intern.user.email}
+                    </button>
+                    <p className="text-sm text-gray-500">{application.intern.university} • {application.intern.major}</p>
+                    <div className="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                      Applied for: {application.internship.title}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-xl border border-gray-100">
+                  <div>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Phone Number</p>
+                    <p className="text-sm font-bold text-gray-900">{application.phoneNumber || 'Not provided'}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Availability</p>
+                    <p className="text-sm font-bold text-gray-900">{application.availability || 'Not provided'}</p>
+                  </div>
+                  {application.portfolioUrl && (
+                    <div>
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Portfolio</p>
+                      <a href={application.portfolioUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-blue-600 hover:underline">View Portfolio</a>
+                    </div>
+                  )}
+                  {application.githubUrl && (
+                    <div>
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">GitHub</p>
+                      <a href={application.githubUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-blue-600 hover:underline">View GitHub</a>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Cover Letter</p>
+                  <p className="text-sm text-gray-600 leading-relaxed bg-white p-4 rounded-xl border border-gray-100 whitespace-pre-wrap">
+                    {application.coverLetter}
+                  </p>
+                </div>
               </div>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => handleApplicationAction(application.id, 'SHORTLISTED')}
-                  className="bg-yellow-500 text-white px-3 py-1 rounded text-sm hover:bg-yellow-600"
+
+              <div className="w-full lg:w-48 space-y-3">
+                <div className="text-center md:text-right mb-4">
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-tighter ${
+                    application.status === 'SELECTED' ? 'bg-green-100 text-green-700' :
+                    application.status === 'REJECTED' ? 'bg-red-100 text-red-700' :
+                    application.status === 'SHORTLISTED' ? 'bg-yellow-100 text-yellow-700' :
+                    'bg-blue-100 text-blue-700'
+                  }`}>
+                    {application.status}
+                  </span>
+                </div>
+                
+                <a 
+                  href={application.resume} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-700 py-2 rounded-lg text-sm font-bold hover:bg-gray-50 transition-all shadow-sm"
                 >
-                  Shortlist
-                </button>
-                <button
-                  onClick={() => handleApplicationAction(application.id, 'REJECTED')}
-                  className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
-                >
-                  Reject
-                </button>
-                <button
-                  onClick={() => handleApplicationAction(application.id, 'SELECTED')}
-                  className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600"
-                >
-                  Select
-                </button>
-                <button className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600">
-                  Schedule Interview
-                </button>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                  View Resume
+                </a>
+
+                {application.status === 'PENDING' && (
+                  <button
+                    onClick={() => handleApplicationAction(application.id, 'SHORTLISTED')}
+                    className="w-full bg-yellow-500 text-white py-2 rounded-lg text-sm font-bold hover:bg-yellow-600 transition-all shadow-md shadow-yellow-100"
+                  >
+                    Shortlist
+                  </button>
+                )}
+                
+                {application.status !== 'REJECTED' && application.status !== 'SELECTED' && (
+                  <button
+                    onClick={() => handleApplicationAction(application.id, 'SELECTED')}
+                    className="w-full bg-green-600 text-white py-2 rounded-lg text-sm font-bold hover:bg-green-700 transition-all shadow-md shadow-green-100"
+                  >
+                    Approve / Select
+                  </button>
+                )}
+
+                {application.status !== 'REJECTED' && (
+                  <button
+                    onClick={() => handleApplicationAction(application.id, 'REJECTED')}
+                    className="w-full bg-red-50 text-red-600 border border-red-100 py-2 rounded-lg text-sm font-bold hover:bg-red-100 transition-all"
+                  >
+                    Reject Candidate
+                  </button>
+                )}
               </div>
-            </div>
-            <div className="mt-2">
-              <p className="text-sm"><strong>Status:</strong> {application.status}</p>
-              <p className="text-sm"><strong>Cover Letter:</strong> {application.coverLetter}</p>
-              <a href={application.resume} className="text-blue-600 text-sm hover:underline">View Resume</a>
             </div>
           </div>
         ))}
+        {applications.length === 0 && (
+          <div className="text-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+            <div className="text-4xl mb-4">Inbox</div>
+            <h3 className="text-lg font-bold text-gray-900 mb-1">No applications yet</h3>
+            <p className="text-gray-500">New applications will appear here once students apply.</p>
+          </div>
+        )}
       </div>
     </div>
   );

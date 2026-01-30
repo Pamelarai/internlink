@@ -1,0 +1,20 @@
+
+Invalid `prisma.application.create()` invocation:
+
+{
+  data: {
+    internshipId: 2,
+    internId: 1,
+    coverLetter: "Test",
+    resume: "test.pdf",
+    whyMe: "Test",
+    ~~~~~
+    availability: "Test",
+    phoneNumber: "123",
+?   id?: Int,
+?   status?: String,
+?   createdAt?: DateTime
+  }
+}
+
+Unknown argument `whyMe`. Available options are marked with ?.

@@ -3,16 +3,38 @@ import { prisma } from '../libs/prisma.js';
 // Apply for an internship
 const applyForInternship = async (req, res) => {
   try {
-    const { internshipId, coverLetter, resume } = req.body;
-    const internId = req.user.internProfile.id;
+    const { internshipId, coverLetter, resume, phoneNumber, availability, portfolioUrl, githubUrl } = req.body;
+    const userId = req.user.id;
+
+    console.log('Application attempt:', { userId, internshipId });
+
+    if (!internshipId) {
+      return res.status(400).json({ message: 'Internship ID is required' });
+    }
+
+    // Check if user has an intern profile
+    const internProfile = await prisma.internProfile.findUnique({
+      where: { userId: parseInt(userId) }
+    });
+
+    if (!internProfile) {
+      console.error('No intern profile found for userId:', userId);
+      return res.status(404).json({ message: 'Intern profile not found. Please complete your profile first.' });
+    }
+
+    const internId = internProfile.id;
 
     // Check if internship exists and is open
     const internship = await prisma.internship.findUnique({
       where: { id: parseInt(internshipId) },
     });
 
-    if (!internship || internship.status !== 'OPEN') {
-      return res.status(400).json({ message: 'Internship not available for application' });
+    if (!internship) {
+      return res.status(404).json({ message: 'Internship not found' });
+    }
+
+    if (internship.status !== 'OPEN') {
+      return res.status(400).json({ message: 'Internship is no longer accepting applications' });
     }
 
     // Check if already applied
@@ -24,22 +46,32 @@ const applyForInternship = async (req, res) => {
     });
 
     if (existingApplication) {
-      return res.status(400).json({ message: 'Already applied for this internship' });
+      return res.status(400).json({ message: 'You have already applied for this internship' });
     }
 
+    console.log('Creating application record...');
     const application = await prisma.application.create({
       data: {
         internshipId: parseInt(internshipId),
         internId,
-        coverLetter,
-        resume,
+        coverLetter: coverLetter || '',
+        resume: resume || '',
+        phoneNumber: phoneNumber || null,
+        availability: availability || null,
+        portfolioUrl: portfolioUrl || null,
+        githubUrl: githubUrl || null,
       },
     });
 
+    console.log('Application created successfully:', application.id);
     res.status(201).json({ message: 'Application submitted successfully', application });
   } catch (error) {
-    console.error('Error applying for internship:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error('CRITICAL: Error applying for internship:', error);
+    res.status(500).json({
+      message: 'Internal server error',
+      details: error.message,
+      code: error.code // Prisma error codes are helpful
+    });
   }
 };
 
