@@ -15,6 +15,7 @@ datasource db {
 enum Role {
   INTERN
   PROVIDER
+  ADMIN
 }
 
 model User {
@@ -22,6 +23,7 @@ model User {
   email            String           @unique
   password         String
   role             Role
+  isBlocked        Boolean          @default(false)
   createdAt        DateTime         @default(now())
   internProfile    InternProfile?
   providerProfile  ProviderProfile?
@@ -81,6 +83,7 @@ model Internship {
   applicationDeadline DateTime
   startDate          DateTime?
   status             String       @default("OPEN")
+  isApproved         Boolean      @default(false)
   category           String       @default("General")
   type               String?      // Paid, Unpaid
   workingHours       String?      // Full-time, Part-time
@@ -140,3 +143,14 @@ model Message {
   isRead        Boolean      @default(false)
   createdAt     DateTime     @default(now())
 }
+
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+}
+
+model Skill {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+}
+

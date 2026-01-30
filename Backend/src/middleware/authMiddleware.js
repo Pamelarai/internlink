@@ -29,3 +29,10 @@ export const authorizeProvider = (req, res, next) => {
     }
     next();
 };
+
+export const authorizeAdmin = (req, res, next) => {
+    if (req.user.role !== 'ADMIN') {
+        return res.status(403).json({ error: 'Access denied, admin role required' });
+    }
+    next();
+};

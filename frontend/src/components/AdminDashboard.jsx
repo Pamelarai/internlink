@@ -1,0 +1,563 @@
+import React, { useState, useEffect } from 'react';
+import api from '../utils/api';
+
+const AdminDashboard = () => {
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [stats, setStats] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [internships, setInternships] = useState([]);
+  const [applications, setApplications] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [skills, setSkills] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [newCategory, setNewCategory] = useState('');
+  const [newSkill, setNewSkill] = useState('');
+  const [viewingInternship, setViewingInternship] = useState(null);
+
+  useEffect(() => {
+    fetchStats();
+    fetchUsers();
+    fetchInternships();
+    fetchApplications();
+    fetchCategories();
+    fetchSkills();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const res = await api.get('/admin/stats');
+      setStats(res.data.data);
+    } catch (err) {
+      console.error('Error fetching stats:', err);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const res = await api.get('/admin/users');
+      setUsers(res.data.data);
+    } catch (err) {
+      console.error('Error fetching users:', err);
+    }
+  };
+
+  const fetchInternships = async () => {
+    try {
+      const res = await api.get('/admin/internships');
+      setInternships(res.data.data);
+    } catch (err) {
+      console.error('Error fetching internships:', err);
+    }
+  };
+
+  const fetchApplications = async () => {
+    try {
+      const res = await api.get('/admin/applications');
+      setApplications(res.data.data);
+    } catch (err) {
+      console.error('Error fetching applications:', err);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const res = await api.get('/admin/categories');
+      setCategories(res.data.data);
+    } catch (err) {
+      console.error('Error fetching categories:', err);
+    }
+  };
+
+  const fetchSkills = async () => {
+    try {
+      const res = await api.get('/admin/skills');
+      setSkills(res.data.data);
+    } catch (err) {
+      console.error('Error fetching skills:', err);
+    }
+  };
+
+  const handleToggleBlock = async (id) => {
+    try {
+      await api.put(`/admin/users/${id}/block`);
+      fetchUsers();
+    } catch (err) {
+      alert('Error toggling block status');
+    }
+  };
+
+  const handleDeleteUser = async (id) => {
+    if (window.confirm('Are you sure you want to delete this user?')) {
+      try {
+        await api.delete(`/admin/users/${id}`);
+        fetchUsers();
+        fetchStats();
+      } catch (err) {
+        alert('Error deleting user');
+      }
+    }
+  };
+
+  const handleApproveInternship = async (id) => {
+    try {
+      await api.put(`/admin/internships/${id}/approve`);
+      fetchInternships();
+    } catch (err) {
+      alert('Error approving internship');
+    }
+  };
+
+  const handleRejectInternship = async (id) => {
+    try {
+      await api.put(`/admin/internships/${id}/reject`);
+      fetchInternships();
+    } catch (err) {
+      alert('Error rejecting internship');
+    }
+  };
+
+  const handleAddCategory = async () => {
+    if (!newCategory) return;
+    try {
+      await api.post('/admin/categories', { name: newCategory });
+      setNewCategory('');
+      fetchCategories();
+    } catch (err) {
+      alert('Error adding category');
+    }
+  };
+
+  const handleDeleteCategory = async (id) => {
+    try {
+      await api.delete(`/admin/categories/${id}`);
+      fetchCategories();
+    } catch (err) {
+      alert('Error deleting category');
+    }
+  };
+
+  const handleAddSkill = async () => {
+    if (!newSkill) return;
+    try {
+      await api.post('/admin/skills', { name: newSkill });
+      setNewSkill('');
+      fetchSkills();
+    } catch (err) {
+      alert('Error adding skill');
+    }
+  };
+
+  const handleDeleteSkill = async (id) => {
+    try {
+      await api.delete(`/admin/skills/${id}`);
+      fetchSkills();
+    } catch (err) {
+      alert('Error deleting skill');
+    }
+  };
+
+  const renderStats = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100 flex flex-col items-center">
+        <span className="text-gray-500 text-sm font-medium uppercase">Total Users</span>
+        <span className="text-3xl font-bold text-indigo-600">{stats?.userCount || 0}</span>
+      </div>
+      <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100 flex flex-col items-center">
+        <span className="text-gray-500 text-sm font-medium uppercase">Interns</span>
+        <span className="text-3xl font-bold text-green-600">{stats?.internCount || 0}</span>
+      </div>
+      <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100 flex flex-col items-center">
+        <span className="text-gray-500 text-sm font-medium uppercase">Providers</span>
+        <span className="text-3xl font-bold text-orange-600">{stats?.providerCount || 0}</span>
+      </div>
+      <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100 flex flex-col items-center">
+        <span className="text-gray-500 text-sm font-medium uppercase">Internships</span>
+        <span className="text-3xl font-bold text-blue-600">{stats?.internshipCount || 0}</span>
+      </div>
+      <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100 flex flex-col items-center">
+        <span className="text-gray-500 text-sm font-medium uppercase">Applications</span>
+        <span className="text-3xl font-bold text-purple-600">{stats?.applicationCount || 0}</span>
+      </div>
+    </div>
+  );
+
+  const renderUsers = () => (
+    <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-gray-50">
+          <tr>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody className="bg-white divide-y divide-gray-200">
+          {users.map((user) => (
+            <tr key={user.id}>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.email}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role === 'ADMIN' ? 'bg-red-100 text-red-800' : user.role === 'PROVIDER' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
+                  {user.role}
+                </span>
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {user.isBlocked ? (
+                  <span className="text-red-600 font-medium">Blocked</span>
+                ) : (
+                  <span className="text-green-600 font-medium">Active</span>
+                )}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <button
+                  onClick={() => handleToggleBlock(user.id)}
+                  className={`mr-4 ${user.isBlocked ? 'text-green-600 hover:text-green-900' : 'text-orange-600 hover:text-orange-900'}`}
+                >
+                  {user.isBlocked ? 'Unblock' : 'Block'}
+                </button>
+                <button
+                  onClick={() => handleDeleteUser(user.id)}
+                  className="text-red-600 hover:text-red-900"
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+
+  const renderInternships = () => (
+    <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-gray-50">
+          <tr>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody className="bg-white divide-y divide-gray-200">
+          {internships.map((internship) => (
+            <tr key={internship.id}>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{internship.title}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{internship.provider?.companyName || 'N/A'}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {internship.isApproved ? (
+                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Approved</span>
+                ) : (
+                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+                )}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <button
+                  onClick={() => setViewingInternship(internship)}
+                  className="text-indigo-600 hover:text-indigo-900 mr-4"
+                >
+                  View
+                </button>
+                {!internship.isApproved ? (
+                  <button
+                    onClick={() => handleApproveInternship(internship.id)}
+                    className="text-green-600 hover:text-green-900"
+                  >
+                    Approve
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleRejectInternship(internship.id)}
+                    className="text-red-600 hover:text-red-900"
+                  >
+                    Reject
+                  </button>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+
+  const renderApplications = () => (
+    <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-gray-50">
+          <tr>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Intern</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Internship</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+          </tr>
+        </thead>
+        <tbody className="bg-white divide-y divide-gray-200">
+          {applications.map((app) => (
+            <tr key={app.id}>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{app.intern?.fullName || 'N/A'}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{app.internship?.title || 'N/A'}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${app.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' : app.status === 'REJECTED' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>
+                  {app.status}
+                </span>
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {new Date(app.createdAt).toLocaleDateString()}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+
+  const renderCategoriesSkills = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      {/* Categories */}
+      <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100">
+        <h3 className="text-lg font-semibold mb-4 text-gray-800">Manage Categories</h3>
+        <div className="flex mb-4">
+          <input
+            type="text"
+            value={newCategory}
+            onChange={(e) => setNewCategory(e.target.value)}
+            className="flex-grow px-3 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="New category name"
+          />
+          <button
+            onClick={handleAddCategory}
+            className="bg-indigo-600 text-white px-4 py-2 rounded-r-lg hover:bg-indigo-700 transition-colors"
+          >
+            Add
+          </button>
+        </div>
+        <ul className="divide-y divide-gray-100">
+          {categories.map((cat) => (
+            <li key={cat.id} className="py-2 flex justify-between items-center">
+              <span className="text-gray-700">{cat.name}</span>
+              <button
+                onClick={() => handleDeleteCategory(cat.id)}
+                className="text-red-500 hover:text-red-700 text-sm"
+              >
+                Delete
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Skills */}
+      <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100">
+        <h3 className="text-lg font-semibold mb-4 text-gray-800">Manage Skills</h3>
+        <div className="flex mb-4">
+          <input
+            type="text"
+            value={newSkill}
+            onChange={(e) => setNewSkill(e.target.value)}
+            className="flex-grow px-3 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="New skill name"
+          />
+          <button
+            onClick={handleAddSkill}
+            className="bg-indigo-600 text-white px-4 py-2 rounded-r-lg hover:bg-indigo-700 transition-colors"
+          >
+            Add
+          </button>
+        </div>
+        <ul className="divide-y divide-gray-100">
+          {skills.map((skill) => (
+            <li key={skill.id} className="py-2 flex justify-between items-center">
+              <span className="text-gray-700">{skill.name}</span>
+              <button
+                onClick={() => handleDeleteSkill(skill.id)}
+                className="text-red-500 hover:text-red-700 text-sm"
+              >
+                Delete
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+  };
+
+  return (
+    <div className="flex min-h-screen bg-gray-50">
+      {/* Sidebar */}
+      <aside className="w-64 bg-white shadow-xl border-r border-gray-100 hidden lg:block">
+        <div className="p-6">
+          <h1 className="text-2xl font-bold text-indigo-700">InternLink Admin</h1>
+        </div>
+        <nav className="mt-6 px-4">
+          <button
+            onClick={() => setActiveTab('dashboard')}
+            className={`w-full text-left px-4 py-3 rounded-lg mb-2 transition-all ${activeTab === 'dashboard' ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-600 hover:bg-gray-100'}`}
+          >
+            Dashboard
+          </button>
+          <button
+            onClick={() => setActiveTab('users')}
+            className={`w-full text-left px-4 py-3 rounded-lg mb-2 transition-all ${activeTab === 'users' ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-600 hover:bg-gray-100'}`}
+          >
+            Users
+          </button>
+          <button
+            onClick={() => setActiveTab('internships')}
+            className={`w-full text-left px-4 py-3 rounded-lg mb-2 transition-all ${activeTab === 'internships' ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-600 hover:bg-gray-100'}`}
+          >
+            Internships
+          </button>
+          <button
+            onClick={() => setActiveTab('applications')}
+            className={`w-full text-left px-4 py-3 rounded-lg mb-2 transition-all ${activeTab === 'applications' ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-600 hover:bg-gray-100'}`}
+          >
+            Applications
+          </button>
+          <button
+            onClick={() => setActiveTab('settings')}
+            className={`w-full text-left px-4 py-3 rounded-lg mb-2 transition-all ${activeTab === 'settings' ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-600 hover:bg-gray-100'}`}
+          >
+            Categories & Skills
+          </button>
+          <button
+            onClick={handleLogout}
+            className="w-full text-left px-4 py-3 rounded-lg mt-8 text-red-600 hover:bg-red-50 transition-all font-medium"
+          >
+            Logout
+          </button>
+        </nav>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 p-8 overflow-y-auto">
+        <header className="flex justify-between items-center mb-8">
+          <h2 className="text-2xl font-bold text-gray-800 capitalize">{activeTab}</h2>
+          <div className="lg:hidden flex items-center gap-4">
+             {/* Simple Mobile Menu would go here */}
+             <select 
+               value={activeTab} 
+               onChange={(e) => setActiveTab(e.target.value)}
+               className="bg-white border border-gray-300 rounded-md px-2 py-1"
+             >
+                <option value="dashboard">Dashboard</option>
+                <option value="users">Users</option>
+                <option value="internships">Internships</option>
+                <option value="applications">Applications</option>
+                <option value="settings">Settings</option>
+             </select>
+          </div>
+        </header>
+
+        {activeTab === 'dashboard' && renderStats()}
+        {activeTab === 'users' && renderUsers()}
+        {activeTab === 'internships' && renderInternships()}
+        {activeTab === 'applications' && renderApplications()}
+        {activeTab === 'settings' && renderCategoriesSkills()}
+      </main>
+
+        {/* View Internship Details Modal */}
+        {viewingInternship && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full my-8">
+              <div className="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">{viewingInternship.title}</h2>
+                  <p className="text-indigo-600 font-semibold">{viewingInternship.provider?.companyName || viewingInternship.companyName}</p>
+                </div>
+                <button 
+                  onClick={() => setViewingInternship(null)} 
+                  className="text-gray-400 hover:text-gray-600 p-2 text-2xl font-bold"
+                >
+                  &times;
+                </button>
+              </div>
+              
+              <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                  <div>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Location</p>
+                    <p className="text-sm font-semibold text-gray-800">{viewingInternship.location} ({viewingInternship.locationType})</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Duration</p>
+                    <p className="text-sm font-semibold text-gray-800">{viewingInternship.duration}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Stipend</p>
+                    <p className="text-sm font-semibold text-gray-800">{viewingInternship.stipend ? `₹${viewingInternship.stipend}` : 'Unpaid'}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Category</p>
+                    <p className="text-sm font-semibold text-gray-800">{viewingInternship.category}</p>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div>
+                    <h4 className="text-sm font-bold text-gray-900 uppercase tracking-widest mb-3 border-b pb-1">About the Internship</h4>
+                    <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">{viewingInternship.aboutInternship || viewingInternship.description}</p>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-gray-900 uppercase tracking-widest mb-3 border-b pb-1">Requirements</h4>
+                    <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">{viewingInternship.requirements}</p>
+                  </div>
+                  {viewingInternship.requiredSkills && (
+                    <div>
+                      <h4 className="text-sm font-bold text-gray-900 uppercase tracking-widest mb-3 border-b pb-1">Skills Required</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {viewingInternship.requiredSkills.split(',').map((skill, i) => (
+                          <span key={i} className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-semibold border border-indigo-100">
+                            {skill.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="p-6 bg-gray-50 border-t border-gray-100 flex justify-end gap-3 rounded-b-2xl">
+                 {!viewingInternship.isApproved ? (
+                    <button
+                      onClick={() => {
+                        handleApproveInternship(viewingInternship.id);
+                        setViewingInternship(null);
+                      }}
+                      className="px-6 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                      Approve This Posting
+                    </button>
+                 ) : (
+                    <button
+                      onClick={() => {
+                        handleRejectInternship(viewingInternship.id);
+                        setViewingInternship(null);
+                      }}
+                      className="px-6 py-2 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-colors"
+                    >
+                      Reject This Posting
+                    </button>
+                 )}
+                 <button
+                   onClick={() => setViewingInternship(null)}
+                   className="px-6 py-2 bg-white border border-gray-300 text-gray-700 font-bold rounded-lg hover:bg-gray-100 transition-colors"
+                 >
+                   Close
+                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+    </div>
+  );
+};
+
+export default AdminDashboard;

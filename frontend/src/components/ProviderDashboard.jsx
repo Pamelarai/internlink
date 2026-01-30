@@ -245,14 +245,24 @@ const ProviderDashboard = () => {
                   </span>
                 </td>
                 <td className="px-6 py-4">
-                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${
-                    internship.status === 'OPEN' 
-                      ? 'bg-green-50 text-green-700 border-green-100' 
-                      : 'bg-red-50 text-red-700 border-red-100'
-                  }`}>
-                    <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${internship.status === 'OPEN' ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                    {internship.status}
-                  </span>
+                  <div className="flex flex-col gap-1">
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${
+                      internship.status === 'OPEN' 
+                        ? 'bg-green-50 text-green-700 border-green-100' 
+                        : 'bg-red-50 text-red-700 border-red-100'
+                    }`}>
+                      <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${internship.status === 'OPEN' ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                      {internship.status}
+                    </span>
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${
+                      internship.isApproved 
+                        ? 'bg-blue-50 text-blue-700 border-blue-100' 
+                        : 'bg-yellow-50 text-yellow-700 border-yellow-100'
+                    }`}>
+                      <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${internship.isApproved ? 'bg-blue-500' : 'bg-yellow-500'}`}></span>
+                      {internship.isApproved ? 'Approved' : 'Pending Approval'}
+                    </span>
+                  </div>
                 </td>
                 <td className="px-6 py-4">
                    <span className="font-bold text-gray-900">{internship.applications?.length || 0}</span>

@@ -145,7 +145,10 @@ const getProviderInternships = async (req, res) => {
 const getAllInternships = async (req, res) => {
   try {
     const internships = await prisma.internship.findMany({
-      where: { status: 'OPEN' },
+      where: {
+        status: 'OPEN',
+        isApproved: true,
+      },
       include: {
         provider: {
           include: {

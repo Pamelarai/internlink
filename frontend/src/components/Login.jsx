@@ -23,6 +23,8 @@ const Login = () => {
         window.location.href = '/provider-dashboard';
       } else if (userRole === 'INTERN') {
         window.location.href = '/seeker-dashboard';
+      } else if (userRole === 'ADMIN') {
+        window.location.href = '/admin-dashboard';
       } else {
         window.location.href = '/'; // fallback
       }
