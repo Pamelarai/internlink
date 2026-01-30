@@ -26,6 +26,8 @@ model User {
   internProfile    InternProfile?
   providerProfile  ProviderProfile?
   notifications    Notification[]
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
 }
 
 model InternProfile {
@@ -114,6 +116,7 @@ model Application {
   githubUrl    String?
   status       String      @default("PENDING")
   createdAt    DateTime    @default(now())
+  messages     Message[]
 }
 
 model Notification {
@@ -123,4 +126,17 @@ model Notification {
   message   String
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+
+model Message {
+  id            Int          @id @default(autoincrement())
+  applicationId Int?
+  application   Application? @relation(fields: [applicationId], references: [id])
+  senderId      Int
+  sender        User         @relation("SentMessages", fields: [senderId], references: [id])
+  receiverId    Int
+  receiver      User         @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  content       String       @db.Text
+  isRead        Boolean      @default(false)
+  createdAt     DateTime     @default(now())
 }

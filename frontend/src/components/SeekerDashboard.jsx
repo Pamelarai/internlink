@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import api from '../utils/api';
+import Messages from './Messages';
 
 const SeekerDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [messageContact, setMessageContact] = useState(null);
   const [stats, setStats] = useState({
     totalApplications: 0,
     pendingApplications: 0,
@@ -283,10 +285,25 @@ const SeekerDashboard = () => {
               </div>
               <div className="flex gap-2">
                 <button
+                  onClick={() => {
+                    setMessageContact({
+                      id: internship.provider?.userId,
+                      email: internship.provider?.user?.email,
+                      role: 'PROVIDER',
+                      providerProfile: { companyName: internship.provider?.companyName || internship.companyName }
+                    });
+                    setActiveTab('messages');
+                  }}
+                  className="bg-white text-blue-600 border border-blue-200 p-1.5 rounded-lg hover:bg-blue-50 transition-colors shadow-sm"
+                  title="Message Company"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+                </button>
+                <button
                   onClick={() => setViewingInternship(internship)}
                   className="bg-white text-blue-600 border border-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors text-sm font-bold"
                 >
-                  View Details
+                  Details
                 </button>
                 <button
                   onClick={() => handleApply(internship)}
@@ -668,6 +685,12 @@ const SeekerDashboard = () => {
                 Notifications
               </button>
               <button
+                onClick={() => setActiveTab('messages')}
+                className={`px-4 py-2 rounded-lg transition-colors ${activeTab === 'messages' ? 'bg-blue-600 text-white' : 'text-blue-700 hover:bg-blue-100'}`}
+              >
+                Messages
+              </button>
+              <button
                 onClick={() => setActiveTab('profile')}
                 className={`px-4 py-2 rounded-lg transition-colors ${activeTab === 'profile' ? 'bg-blue-600 text-white' : 'text-blue-700 hover:bg-blue-100'}`}
               >
@@ -690,6 +713,7 @@ const SeekerDashboard = () => {
         {activeTab === 'internships' && renderInternships()}
         {activeTab === 'applications' && renderApplications()}
         {activeTab === 'notifications' && renderNotifications()}
+        {activeTab === 'messages' && <Messages initialContact={messageContact} />}
         {activeTab === 'profile' && renderProfile()}
       </div>
 
@@ -791,6 +815,22 @@ const SeekerDashboard = () => {
                 className="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-black hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all tracking-tight"
               >
                 Apply Now
+              </button>
+              <button 
+                onClick={() => {
+                  setMessageContact({
+                    id: viewingInternship.provider.userId,
+                    email: viewingInternship.provider.user.email,
+                    role: 'PROVIDER',
+                    providerProfile: { companyName: viewingInternship.provider.companyName }
+                  });
+                  setActiveTab('messages');
+                  setViewingInternship(null);
+                }}
+                className="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-4 rounded-2xl font-black hover:bg-blue-50 transition-all tracking-tight flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+                Message
               </button>
             </div>
           </div>

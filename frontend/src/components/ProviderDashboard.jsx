@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import api from '../utils/api';
+import Messages from './Messages';
 
 const ProviderDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [messageContact, setMessageContact] = useState(null);
   const [stats, setStats] = useState({
     totalInternships: 0,
     activeInternships: 0,
@@ -408,6 +410,22 @@ const ProviderDashboard = () => {
                     Reject Candidate
                   </button>
                 )}
+
+                <button
+                  onClick={() => {
+                    setMessageContact({
+                      id: application.intern.user.id,
+                      email: application.intern.user.email,
+                      role: 'INTERN',
+                      internProfile: { fullName: application.intern.fullName }
+                    });
+                    setActiveTab('messages');
+                  }}
+                  className="w-full bg-blue-50 text-blue-600 border border-blue-100 py-2 rounded-lg text-sm font-bold hover:bg-blue-100 transition-all flex items-center justify-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+                  Message Applicant
+                </button>
               </div>
             </div>
           </div>
@@ -715,6 +733,12 @@ const ProviderDashboard = () => {
                 Notifications
               </button>
               <button
+                onClick={() => setActiveTab('messages')}
+                className={`px-3 py-2 rounded ${activeTab === 'messages' ? 'bg-blue-100 text-blue-700' : 'text-gray-700'}`}
+              >
+                Messages
+              </button>
+              <button
                 onClick={() => setActiveTab('profile')}
                 className={`px-3 py-2 rounded ${activeTab === 'profile' ? 'bg-blue-100 text-blue-700' : 'text-gray-700'}`}
               >
@@ -737,6 +761,7 @@ const ProviderDashboard = () => {
         {activeTab === 'internships' && renderInternships()}
         {activeTab === 'applications' && renderApplications()}
         {activeTab === 'notifications' && renderNotifications()}
+        {activeTab === 'messages' && <Messages initialContact={messageContact} />}
         {activeTab === 'profile' && renderCompanyProfile()}
       </div>
 
