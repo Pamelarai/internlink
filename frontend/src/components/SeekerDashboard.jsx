@@ -5,6 +5,7 @@ import Messages from './Messages';
 const SeekerDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [messageContact, setMessageContact] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const [stats, setStats] = useState({
     totalApplications: 0,
     pendingApplications: 0,
@@ -258,66 +259,130 @@ const SeekerDashboard = () => {
     </div>
   );
 
-  const renderInternships = () => (
-    <div className="bg-white rounded-xl shadow-sm border border-blue-200 p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-blue-900">Available Internships</h2>
-        <div className="text-sm text-blue-600">Showing {internships.length} opportunities</div>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {internships.map((internship) => (
-          <div key={internship.id} className="bg-blue-50 border border-blue-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold text-blue-900 mb-2">{internship.title}</h3>
-              <p className="text-blue-700 font-medium">{internship.provider?.companyName || 'Company'}</p>
-              <p className="text-blue-600 text-sm">{internship.location}</p>
+  const renderInternships = () => {
+    const filteredInternships = internships.filter(internship => {
+      const searchLower = searchTerm.toLowerCase();
+      return (
+        internship.title.toLowerCase().includes(searchLower) ||
+        (internship.provider?.companyName || internship.companyName || '').toLowerCase().includes(searchLower) ||
+        (internship.category || '').toLowerCase().includes(searchLower)
+      );
+    });
+
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-blue-100 p-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+              <h2 className="text-3xl font-black text-blue-900">Browse Projects</h2>
+              <p className="text-blue-600 font-medium">Find your next career-defining opportunity</p>
             </div>
-            <div className="mb-4">
-              <p className="text-blue-800 text-sm mb-2">{internship.description.substring(0, 100)}...</p>
-              <div className="flex flex-wrap gap-2">
-                <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">{internship.category}</span>
-                <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">{internship.duration}</span>
-              </div>
-            </div>
-            <div className="flex justify-between items-center mt-auto">
-              <div className="text-blue-700 font-bold">
-                {internship.stipend ? `₹${internship.stipend}/mo` : 'Unpaid'}
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    setMessageContact({
-                      id: internship.provider?.userId,
-                      email: internship.provider?.user?.email,
-                      role: 'PROVIDER',
-                      providerProfile: { companyName: internship.provider?.companyName || internship.companyName }
-                    });
-                    setActiveTab('messages');
-                  }}
-                  className="bg-white text-blue-600 border border-blue-200 p-1.5 rounded-lg hover:bg-blue-50 transition-colors shadow-sm"
-                  title="Message Company"
+            
+            <div className="relative flex-1 max-w-md">
+              <input 
+                type="text" 
+                placeholder="Search by role, company, or field (e.g. IT, Marketing)"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-12 pr-4 py-4 bg-blue-50/50 border border-blue-100 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all text-blue-900 placeholder:text-blue-300 font-medium"
+              />
+              <svg className="w-6 h-6 absolute left-4 top-1/2 -translate-y-1/2 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              {searchTerm && (
+                <button 
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-400 hover:text-blue-600"
                 >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+                  &times;
                 </button>
-                <button
-                  onClick={() => setViewingInternship(internship)}
-                  className="bg-white text-blue-600 border border-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors text-sm font-bold"
-                >
-                  Details
-                </button>
-                <button
-                  onClick={() => handleApply(internship)}
-                  className="bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition-colors text-sm font-bold shadow-sm"
-                >
-                  Apply
-                </button>
-              </div>
+              )}
             </div>
           </div>
-        ))}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredInternships.map((internship) => (
+            <div key={internship.id} className="bg-white border border-blue-100 rounded-3xl p-6 hover:shadow-xl hover:shadow-blue-100 transition-all duration-300 flex flex-col group relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-16 -mt-16 group-hover:bg-blue-100 transition-colors duration-300"></div>
+              
+              <div className="relative z-10 h-full flex flex-col">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="w-14 h-14 bg-white border border-blue-50 shadow-sm rounded-2xl flex items-center justify-center text-blue-600 font-black text-xl overflow-hidden">
+                    {(internship.provider?.companyName || internship.companyName || 'C').charAt(0)}
+                  </div>
+                  <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-tighter ${
+                    internship.type === 'Paid' ? 'bg-green-50 text-green-600' : 'bg-blue-50 text-blue-600'
+                  }`}>
+                    {internship.category}
+                  </span>
+                </div>
+
+                <div className="mb-6">
+                  <h3 className="text-xl font-black text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">{internship.title}</h3>
+                  <p className="text-blue-600 font-bold text-sm mb-2">{internship.provider?.companyName || internship.companyName}</p>
+                  <div className="flex items-center gap-2 text-gray-400 text-xs font-medium">
+                    <svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    {internship.location} • {internship.locationType}
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2 mb-6">
+                  <span className="px-3 py-1.5 bg-gray-50 text-gray-600 text-[10px] font-bold rounded-xl">{internship.duration}</span>
+                  <span className="px-3 py-1.5 bg-gray-50 text-gray-600 text-[10px] font-bold rounded-xl">
+                    {internship.stipend ? `₹${internship.stipend}/mo` : 'Unpaid'}
+                  </span>
+                </div>
+
+                <div className="flex gap-3 mt-auto">
+                  <button
+                    onClick={() => {
+                      setMessageContact({
+                        id: internship.provider?.userId,
+                        email: internship.provider?.user?.email,
+                        role: 'PROVIDER',
+                        providerProfile: { companyName: internship.provider?.companyName || internship.companyName }
+                      });
+                      setActiveTab('messages');
+                    }}
+                    className="p-3 bg-blue-50 text-blue-600 rounded-2xl hover:bg-blue-600 hover:text-white transition-all duration-300"
+                    title="Message Company"
+                  >
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+                  </button>
+                  <button
+                    onClick={() => setViewingInternship(internship)}
+                    className="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-3 rounded-2xl font-black text-sm hover:bg-blue-50 transition-all"
+                  >
+                    Details
+                  </button>
+                  <button
+                    onClick={() => handleApply(internship)}
+                    className="flex-[1.5] bg-blue-600 text-white py-3 rounded-2xl font-black text-sm hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all uppercase tracking-tight"
+                  >
+                    Apply Now
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+          {filteredInternships.length === 0 && (
+            <div className="col-span-full py-20 text-center bg-white rounded-3xl border border-dashed border-blue-200">
+               <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">🔍</div>
+               <h3 className="text-2xl font-black text-blue-900 mb-2">No results found</h3>
+               <p className="text-blue-500">We couldn't find any internships matching "{searchTerm}".</p>
+               <button 
+                 onClick={() => setSearchTerm('')}
+                 className="mt-6 text-blue-600 font-bold hover:underline"
+               >
+                 Clear all filters
+               </button>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderApplications = () => (
     <div className="bg-white rounded-xl shadow-sm border border-blue-200 p-6">
