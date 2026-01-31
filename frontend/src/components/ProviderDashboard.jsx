@@ -711,52 +711,44 @@ const ProviderDashboard = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#f8fafc] font-['Inter'] tracking-tight">
       {/* Navigation */}
-      <nav className="bg-white shadow-sm">
+      <nav className="bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <h1 className="text-2xl font-bold text-gray-900">InternLink - Provider</h1>
-            <div className="flex space-x-4">
-              <button
-                onClick={() => setActiveTab('overview')}
-                className={`px-3 py-2 rounded ${activeTab === 'overview' ? 'bg-blue-100 text-blue-700' : 'text-gray-700'}`}
-              >
-                Dashboard
-              </button>
-              <button
-                onClick={() => setActiveTab('internships')}
-                className={`px-3 py-2 rounded ${activeTab === 'internships' ? 'bg-blue-100 text-blue-700' : 'text-gray-700'}`}
-              >
-                My Internships
-              </button>
-              <button
-                onClick={() => setActiveTab('applications')}
-                className={`px-3 py-2 rounded ${activeTab === 'applications' ? 'bg-blue-100 text-blue-700' : 'text-gray-700'}`}
-              >
-                Applications
-              </button>
-              <button
-                onClick={() => setActiveTab('notifications')}
-                className={`px-3 py-2 rounded ${activeTab === 'notifications' ? 'bg-blue-100 text-blue-700' : 'text-gray-700'}`}
-              >
-                Notifications
-              </button>
-              <button
-                onClick={() => setActiveTab('messages')}
-                className={`px-3 py-2 rounded ${activeTab === 'messages' ? 'bg-blue-100 text-blue-700' : 'text-gray-700'}`}
-              >
-                Messages
-              </button>
-              <button
-                onClick={() => setActiveTab('profile')}
-                className={`px-3 py-2 rounded ${activeTab === 'profile' ? 'bg-blue-100 text-blue-700' : 'text-gray-700'}`}
-              >
-                Company Profile
-              </button>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-blue-600 rounded-lg"></div>
+              <h1 className="text-xl font-black text-gray-900 leading-none">InternLink</h1>
+              <span className="hidden md:inline px-2 py-1 bg-gray-100 text-gray-400 text-[10px] font-black uppercase rounded tracking-widest ml-1">Partner</span>
+            </div>
+            
+            <div className="hidden lg:flex items-center gap-1">
+              {[
+                { id: 'overview', label: 'Dashboard' },
+                { id: 'internships', label: 'Internships' },
+                { id: 'applications', label: 'Applicants' },
+                { id: 'notifications', label: 'Inbox' },
+                { id: 'messages', label: 'Messages' },
+                { id: 'profile', label: 'Company' }
+              ].map(item => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+                    activeTab === item.id 
+                    ? 'bg-blue-50 text-blue-600' 
+                    : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-4">
               <button
                 onClick={() => { localStorage.clear(); window.location.href = '/'; }}
-                className="text-red-600 hover:text-red-800"
+                className="text-xs font-black text-gray-400 uppercase tracking-widest hover:text-red-600 transition-colors"
               >
                 Logout
               </button>
@@ -766,14 +758,14 @@ const ProviderDashboard = () => {
       </nav>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {activeTab === 'overview' && renderOverview()}
         {activeTab === 'internships' && renderInternships()}
         {activeTab === 'applications' && renderApplications()}
         {activeTab === 'notifications' && renderNotifications()}
         {activeTab === 'messages' && <Messages initialContact={messageContact} />}
         {activeTab === 'profile' && renderCompanyProfile()}
-      </div>
+      </main>
 
       {/* Post/Edit Modal */}
       {showPostForm && (

@@ -390,50 +390,51 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-[#f8fafc] font-['Inter'] tracking-tight">
       {/* Sidebar */}
-      <aside className="w-64 bg-white shadow-xl border-r border-gray-100 hidden lg:block">
-        <div className="p-6">
-          <h1 className="text-2xl font-bold text-indigo-700">InternLink Admin</h1>
+      <aside className="w-72 bg-white border-r border-gray-100 hidden lg:flex flex-col sticky top-0 h-screen">
+        <div className="p-8">
+          <div className="flex items-center gap-2 mb-10">
+            <div className="w-8 h-8 bg-indigo-600 rounded-lg"></div>
+            <h1 className="text-xl font-black text-gray-900 tracking-tight">InternLink</h1>
+            <span className="px-2 py-1 bg-gray-100 text-gray-400 text-[10px] font-black uppercase rounded tracking-widest">Admin</span>
+          </div>
+          
+          <nav className="space-y-1">
+            {[
+              { id: 'dashboard', label: 'Overview', icon: 'M4 6h16M4 12h16M4 18h16' },
+              { id: 'users', label: 'User Management', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197' },
+              { id: 'internships', label: 'Internships', icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
+              { id: 'applications', label: 'Applications', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
+              { id: 'settings', label: 'Categories & Skills', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z' }
+            ].map(item => (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${
+                  activeTab === item.id 
+                  ? 'bg-indigo-50 text-indigo-600 shadow-sm shadow-indigo-100/50' 
+                  : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+              >
+                <svg className="w-5 h-5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor font-bold">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
+                </svg>
+                {item.label}
+              </button>
+            ))}
+          </nav>
         </div>
-        <nav className="mt-6 px-4">
-          <button
-            onClick={() => setActiveTab('dashboard')}
-            className={`w-full text-left px-4 py-3 rounded-lg mb-2 transition-all ${activeTab === 'dashboard' ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-600 hover:bg-gray-100'}`}
-          >
-            Dashboard
-          </button>
-          <button
-            onClick={() => setActiveTab('users')}
-            className={`w-full text-left px-4 py-3 rounded-lg mb-2 transition-all ${activeTab === 'users' ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-600 hover:bg-gray-100'}`}
-          >
-            Users
-          </button>
-          <button
-            onClick={() => setActiveTab('internships')}
-            className={`w-full text-left px-4 py-3 rounded-lg mb-2 transition-all ${activeTab === 'internships' ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-600 hover:bg-gray-100'}`}
-          >
-            Internships
-          </button>
-          <button
-            onClick={() => setActiveTab('applications')}
-            className={`w-full text-left px-4 py-3 rounded-lg mb-2 transition-all ${activeTab === 'applications' ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-600 hover:bg-gray-100'}`}
-          >
-            Applications
-          </button>
-          <button
-            onClick={() => setActiveTab('settings')}
-            className={`w-full text-left px-4 py-3 rounded-lg mb-2 transition-all ${activeTab === 'settings' ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-600 hover:bg-gray-100'}`}
-          >
-            Categories & Skills
-          </button>
+        
+        <div className="mt-auto p-8 border-t border-gray-50">
           <button
             onClick={handleLogout}
-            className="w-full text-left px-4 py-3 rounded-lg mt-8 text-red-600 hover:bg-red-50 transition-all font-medium"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-red-500 hover:bg-red-50 transition-all"
           >
-            Logout
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+            Sign Out
           </button>
-        </nav>
+        </div>
       </aside>
 
       {/* Main Content */}

@@ -4,53 +4,61 @@ import { useNavigate } from 'react-router-dom';
 const SelectionPage = () => {
   const navigate = useNavigate();
 
-  const handleSelection = () => {
-    navigate('/login');
-  };
-
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
-      <div className="bg-gray-100/90 backdrop-blur-sm rounded-2xl shadow-2xl p-12 max-w-md w-full mx-4 border border-gray-300">
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">
-            Select Your Role
-          </h1>
-          <p className="text-gray-600 text-sm">Choose how you'd like to proceed</p>
+    <div className="min-h-screen bg-[#f8fafc] flex flex-col items-center justify-center p-6">
+      <div className="max-w-md w-full">
+        <div className="text-center mb-12">
+          <div className="w-12 h-12 bg-blue-600 rounded-xl mx-auto mb-6"></div>
+          <h1 className="text-3xl font-black text-gray-900 tracking-tight mb-3">Join InternLink</h1>
+          <p className="text-gray-500 font-medium">Choose how you would like to use the platform.</p>
         </div>
 
-        <div className="space-y-6">
-          <div className="group">
-            <button
-              onClick={() => handleSelection('Internship')}
-              className="w-full px-6 py-4 bg-gray-200 text-gray-800 rounded-xl hover:bg-gray-300 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl font-semibold text-lg border border-gray-300"
-            >
-              🎓 Internship Seeker
-            </button>
-            <p className="text-center text-sm text-gray-600 mt-3">
-              Looking for internship opportunities?{' '}
-              <a href="/signup/internship" className="text-gray-700 hover:text-gray-900 font-medium hover:underline transition-colors">
-                Sign up here
-              </a>
-            </p>
+        <div className="space-y-4">
+          <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:border-blue-600 transition-all group">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Internship Seeker</h3>
+            <p className="text-sm text-gray-500 mb-6 leading-relaxed">Discover personalized opportunities and grow your professional career.</p>
+            <div className="flex flex-col gap-3">
+              <button 
+                onClick={() => navigate('/login')}
+                className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-sm hover:bg-blue-700 transition-colors"
+              >
+                Log in
+              </button>
+              <button 
+                onClick={() => navigate('/signup/internship')}
+                className="w-full bg-white border border-gray-200 text-gray-900 py-3 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors"
+              >
+                Create Seeker Account
+              </button>
+            </div>
           </div>
 
-          <div className="group">
-            <button
-              onClick={() => handleSelection('Provider')}
-              className="w-full px-6 py-4 bg-gray-200 text-gray-800 rounded-xl hover:bg-gray-300 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl font-semibold text-lg border border-gray-300"
-            >
-              🏢 Internship Provider
-            </button>
-            <p className="text-center text-sm text-gray-600 mt-3">
-              Offering internship positions?{' '}
-              <a href="/signup/provider" className="text-gray-700 hover:text-gray-900 font-medium hover:underline transition-colors">
-                Sign up here
-              </a>
-            </p>
+          <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:border-blue-600 transition-all group">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Company Partner</h3>
+            <p className="text-sm text-gray-500 mb-6 leading-relaxed">Source elite talent and manage your internship programs at scale.</p>
+            <div className="flex flex-col gap-3">
+              <button 
+                onClick={() => navigate('/login')}
+                className="w-full bg-gray-900 text-white py-3 rounded-xl font-bold text-sm hover:bg-black transition-colors"
+              >
+                Log in
+              </button>
+              <button 
+                onClick={() => navigate('/signup/provider')}
+                className="w-full bg-white border border-gray-200 text-gray-900 py-3 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors"
+              >
+                Create Partner Account
+              </button>
+            </div>
           </div>
         </div>
 
-       
+        <button 
+          onClick={() => navigate('/')}
+          className="mt-12 w-full text-xs font-black text-gray-400 uppercase tracking-widest hover:text-blue-600 transition-colors"
+        >
+          Back to Home
+        </button>
       </div>
     </div>
   );
