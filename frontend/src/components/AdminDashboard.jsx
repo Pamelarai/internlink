@@ -7,11 +7,7 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [internships, setInternships] = useState([]);
   const [applications, setApplications] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [skills, setSkills] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [newCategory, setNewCategory] = useState('');
-  const [newSkill, setNewSkill] = useState('');
   const [viewingInternship, setViewingInternship] = useState(null);
 
   useEffect(() => {
@@ -19,8 +15,6 @@ const AdminDashboard = () => {
     fetchUsers();
     fetchInternships();
     fetchApplications();
-    fetchCategories();
-    fetchSkills();
   }, []);
 
   const fetchStats = async () => {
@@ -59,23 +53,6 @@ const AdminDashboard = () => {
     }
   };
 
-  const fetchCategories = async () => {
-    try {
-      const res = await api.get('/admin/categories');
-      setCategories(res.data.data);
-    } catch (err) {
-      console.error('Error fetching categories:', err);
-    }
-  };
-
-  const fetchSkills = async () => {
-    try {
-      const res = await api.get('/admin/skills');
-      setSkills(res.data.data);
-    } catch (err) {
-      console.error('Error fetching skills:', err);
-    }
-  };
 
   const handleToggleBlock = async (id) => {
     try {
@@ -116,45 +93,6 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleAddCategory = async () => {
-    if (!newCategory) return;
-    try {
-      await api.post('/admin/categories', { name: newCategory });
-      setNewCategory('');
-      fetchCategories();
-    } catch (err) {
-      alert('Error adding category');
-    }
-  };
-
-  const handleDeleteCategory = async (id) => {
-    try {
-      await api.delete(`/admin/categories/${id}`);
-      fetchCategories();
-    } catch (err) {
-      alert('Error deleting category');
-    }
-  };
-
-  const handleAddSkill = async () => {
-    if (!newSkill) return;
-    try {
-      await api.post('/admin/skills', { name: newSkill });
-      setNewSkill('');
-      fetchSkills();
-    } catch (err) {
-      alert('Error adding skill');
-    }
-  };
-
-  const handleDeleteSkill = async (id) => {
-    try {
-      await api.delete(`/admin/skills/${id}`);
-      fetchSkills();
-    } catch (err) {
-      alert('Error deleting skill');
-    }
-  };
 
   const renderStats = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -313,75 +251,6 @@ const AdminDashboard = () => {
     </div>
   );
 
-  const renderCategoriesSkills = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-      {/* Categories */}
-      <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100">
-        <h3 className="text-lg font-semibold mb-4 text-gray-800">Manage Categories</h3>
-        <div className="flex mb-4">
-          <input
-            type="text"
-            value={newCategory}
-            onChange={(e) => setNewCategory(e.target.value)}
-            className="flex-grow px-3 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="New category name"
-          />
-          <button
-            onClick={handleAddCategory}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-r-lg hover:bg-indigo-700 transition-colors"
-          >
-            Add
-          </button>
-        </div>
-        <ul className="divide-y divide-gray-100">
-          {categories.map((cat) => (
-            <li key={cat.id} className="py-2 flex justify-between items-center">
-              <span className="text-gray-700">{cat.name}</span>
-              <button
-                onClick={() => handleDeleteCategory(cat.id)}
-                className="text-red-500 hover:text-red-700 text-sm"
-              >
-                Delete
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* Skills */}
-      <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100">
-        <h3 className="text-lg font-semibold mb-4 text-gray-800">Manage Skills</h3>
-        <div className="flex mb-4">
-          <input
-            type="text"
-            value={newSkill}
-            onChange={(e) => setNewSkill(e.target.value)}
-            className="flex-grow px-3 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="New skill name"
-          />
-          <button
-            onClick={handleAddSkill}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-r-lg hover:bg-indigo-700 transition-colors"
-          >
-            Add
-          </button>
-        </div>
-        <ul className="divide-y divide-gray-100">
-          {skills.map((skill) => (
-            <li key={skill.id} className="py-2 flex justify-between items-center">
-              <span className="text-gray-700">{skill.name}</span>
-              <button
-                onClick={() => handleDeleteSkill(skill.id)}
-                className="text-red-500 hover:text-red-700 text-sm"
-              >
-                Delete
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  );
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -405,8 +274,7 @@ const AdminDashboard = () => {
               { id: 'dashboard', label: 'Overview', icon: 'M4 6h16M4 12h16M4 18h16' },
               { id: 'users', label: 'User Management', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197' },
               { id: 'internships', label: 'Internships', icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
-              { id: 'applications', label: 'Applications', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
-              { id: 'settings', label: 'Categories & Skills', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z' }
+              { id: 'applications', label: 'Applications', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' }
             ].map(item => (
               <button
                 key={item.id}
@@ -452,7 +320,6 @@ const AdminDashboard = () => {
                 <option value="users">Users</option>
                 <option value="internships">Internships</option>
                 <option value="applications">Applications</option>
-                <option value="settings">Settings</option>
              </select>
           </div>
         </header>
@@ -461,7 +328,6 @@ const AdminDashboard = () => {
         {activeTab === 'users' && renderUsers()}
         {activeTab === 'internships' && renderInternships()}
         {activeTab === 'applications' && renderApplications()}
-        {activeTab === 'settings' && renderCategoriesSkills()}
       </main>
 
         {/* View Internship Details Modal */}

@@ -100,6 +100,15 @@ const ProviderDashboard = () => {
     try {
       const formData = new FormData(e.target);
       
+      const applicationDeadline = formData.get('applicationDeadline');
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      if (new Date(applicationDeadline) < today) {
+        alert('Application deadline cannot be in the past. Please choose a future date.');
+        return;
+      }
+
       const internshipData = {
         title: formData.get('title'),
         companyName: formData.get('companyName'),
@@ -107,7 +116,7 @@ const ProviderDashboard = () => {
         category: formData.get('category'),
         locationType: formData.get('locationType'),
         duration: formData.get('duration'),
-        applicationDeadline: formData.get('applicationDeadline'),
+        applicationDeadline: applicationDeadline,
         stipend: formData.get('stipend') ? parseFloat(formData.get('stipend')) : null,
         aboutInternship: formData.get('aboutInternship'),
         requirements: formData.get('requirements'),
@@ -824,7 +833,14 @@ const ProviderDashboard = () => {
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Application Deadline</label>
-                    <input name="applicationDeadline" defaultValue={editingInternship?.applicationDeadline ? editingInternship.applicationDeadline.split('T')[0] : ""} type="date" required className="w-full px-4 py-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-600" />
+                    <input 
+                      name="applicationDeadline" 
+                      defaultValue={editingInternship?.applicationDeadline ? editingInternship.applicationDeadline.split('T')[0] : ""} 
+                      type="date" 
+                      min={new Date().toISOString().split('T')[0]}
+                      required 
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-600" 
+                    />
                   </div>
                 </div>
 

@@ -42,7 +42,6 @@ const createInternship = async (req, res) => {
       rolesResponsibilities,
       whatInternWillLearn,
       selectionProcess,
-      certificate,
       jobOffer,
       otherBenefits,
       requiredSkills,
@@ -77,7 +76,6 @@ const createInternship = async (req, res) => {
       rolesResponsibilities,
       whatInternWillLearn,
       selectionProcess,
-      certificate: certificate === true || certificate === 'on',
       jobOffer: jobOffer === true || jobOffer === 'on',
       otherBenefits,
       requiredSkills,
@@ -201,7 +199,6 @@ const updateInternship = async (req, res) => {
       startDate: data.startDate ? new Date(data.startDate) : undefined,
       hoursPerDay: data.hoursPerDay ? parseInt(data.hoursPerDay) : undefined,
       numberOfOpenings: data.numberOfOpenings ? parseInt(data.numberOfOpenings) : undefined,
-      certificate: data.certificate === true || data.certificate === 'on',
       jobOffer: data.jobOffer === true || data.jobOffer === 'on',
     };
 

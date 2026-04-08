@@ -60,17 +60,51 @@ export const deleteUser = async (req, res) => {
         const { id } = req.params
         const userId = Number(id)
 
-        // Delete related profiles first to avoid foreign key constraints
-        await prisma.internProfile.deleteMany({ where: { userId } })
-        await prisma.providerProfile.deleteMany({ where: { userId } })
-        // Note: Other relations like applications, notifications etc might still cause issues
-        // but this covers the main ones. In a real app, onDelete: Cascade in Prisma is better.
+        // 1. Delete notifications and global messages involving this user
+        await prisma.notification.deleteMany({ where: { userId } })
+        await prisma.message.deleteMany({ where: { OR: [{ senderId: userId }, { receiverId: userId }] } })
 
+        // 2. Handle Intern Profile and its applications
+        const internProfile = await prisma.internProfile.findUnique({ where: { userId } })
+        if (internProfile) {
+            const applications = await prisma.application.findMany({ where: { internId: internProfile.id } })
+            const applicationIds = applications.map(app => app.id)
+            
+            // Delete messages linked to these applications
+            await prisma.message.deleteMany({ where: { applicationId: { in: applicationIds } } })
+            // Delete the applications themselves
+            await prisma.application.deleteMany({ where: { internId: internProfile.id } })
+            // Delete the profile
+            await prisma.internProfile.delete({ where: { id: internProfile.id } })
+        }
+
+        // 3. Handle Provider Profile and its internships/applications
+        const providerProfile = await prisma.providerProfile.findUnique({ where: { userId } })
+        if (providerProfile) {
+            const internships = await prisma.internship.findMany({ where: { providerId: providerProfile.id } })
+            const internshipIds = internships.map(i => i.id)
+
+            // Find all applications for these internships
+            const applications = await prisma.application.findMany({ where: { internshipId: { in: internshipIds } } })
+            const applicationIds = applications.map(app => app.id)
+
+            // Delete messages linked to these internship applications
+            await prisma.message.deleteMany({ where: { applicationId: { in: applicationIds } } })
+            // Delete the applications
+            await prisma.application.deleteMany({ where: { internshipId: { in: internshipIds } } })
+            // Delete the internships
+            await prisma.internship.deleteMany({ where: { providerId: providerProfile.id } })
+            // Delete the provider profile
+            await prisma.providerProfile.delete({ where: { id: providerProfile.id } })
+        }
+
+        // 4. Finally delete the user account
         await prisma.user.delete({ where: { id: userId } })
-        return sendSuccess(res, null, 'User deleted successfully')
+        
+        return sendSuccess(res, null, 'User and all related data deleted successfully')
     } catch (err) {
         console.error('Delete user error:', err)
-        return sendError(res, 'Server error', 500)
+        return sendError(res, `Delete failed: ${err.message}`, 500)
     }
 }
 

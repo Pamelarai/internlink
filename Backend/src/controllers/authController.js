@@ -19,6 +19,10 @@ export const login = async (req, res) => {
 			return sendError(res, 'Invalid credentials', 401)
 		}
 
+		if (user.isBlocked) {
+			return sendError(res, 'Your account has been blocked by admin. Please contact support.', 403)
+		}
+
 		const token = generateToken(user.id, user.role)
 
 		console.log(`User logged in: ${user.email}`)
