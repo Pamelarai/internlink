@@ -95,7 +95,7 @@ model Internship {
   rolesResponsibilities String?   @db.Text
   whatInternWillLearn String?      @db.Text
   selectionProcess   String?      @db.Text
-  certificate        Boolean      @default(false)
+
   jobOffer           Boolean      @default(false)
   otherBenefits      String?      @db.Text
   requiredSkills     String?      @db.Text

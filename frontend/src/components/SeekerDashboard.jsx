@@ -117,7 +117,7 @@ const SeekerDashboard = () => {
     setApplicationForm({
       coverLetter: '',
       resume: profileData?.resumeUrl || '',
-      phoneNumber: '',
+      phoneNumber: '+977 ',
       availability: '',
       portfolioUrl: profileData?.portfolioUrl || '',
       githubUrl: profileData?.githubUrl || ''
@@ -996,12 +996,22 @@ const SeekerDashboard = () => {
       {applyingToInternship && (
         <div className="fixed inset-0 bg-blue-900/60 backdrop-blur-md flex items-center justify-center z-[70] p-4 overflow-y-auto">
           <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full my-auto animate-in fade-in zoom-in duration-200 overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="px-8 py-6 border-b border-blue-50 flex justify-between items-center bg-blue-50/30">
-              <div>
-                <h2 className="text-2xl font-black text-blue-900">Apply for Internship</h2>
-                <p className="text-blue-600 text-sm font-medium">{applyingToInternship.title} at {applyingToInternship.provider?.companyName || applyingToInternship.companyName}</p>
+            <div className="px-8 py-8 border-b border-blue-50 flex justify-between items-center bg-gradient-to-r from-blue-50 via-white to-blue-50/30">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-200">
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                </div>
+                <div>
+                  <h2 className="text-2xl font-black text-blue-900 tracking-tight leading-none mb-1">Apply for Internship</h2>
+                  <p className="text-blue-600/70 text-[10px] font-black uppercase tracking-widest">{applyingToInternship.title} • {applyingToInternship.provider?.companyName || applyingToInternship.companyName}</p>
+                </div>
               </div>
-              <button onClick={() => setApplyingToInternship(null)} className="text-blue-400 hover:text-blue-600 p-2 bg-white rounded-full shadow-sm transition-all text-xl font-bold">&times;</button>
+              <button 
+                onClick={() => setApplyingToInternship(null)} 
+                className="text-blue-400 hover:text-blue-600 p-2 bg-white rounded-xl shadow-sm border border-blue-50 transition-all hover:scale-105 active:scale-95"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
             </div>
 
             <form onSubmit={submitApplication} className="p-8 space-y-6 overflow-y-auto">
@@ -1018,7 +1028,7 @@ const SeekerDashboard = () => {
                   rows="4"
                   value={applicationForm.coverLetter}
                   onChange={(e) => setApplicationForm({...applicationForm, coverLetter: e.target.value})}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm"
+                  className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-blue-100 rounded-2xl focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600 focus:bg-white transition-all text-sm font-medium text-gray-700 shadow-sm placeholder-gray-300"
                   placeholder="Why are you a good fit for this role? Share your motivation and relevant experience."
                 ></textarea>
               </div>
@@ -1031,20 +1041,34 @@ const SeekerDashboard = () => {
                     type="url"
                     value={applicationForm.resume}
                     onChange={(e) => setApplicationForm({...applicationForm, resume: e.target.value})}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm"
+                    className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-blue-100 rounded-2xl focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600 focus:bg-white transition-all text-sm font-medium text-gray-700 shadow-sm placeholder-gray-300"
                     placeholder="Link to your resume (Google Drive, Dropbox, etc.)"
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-black text-blue-400 uppercase tracking-widest mb-2">Phone Number</label>
-                  <input
-                    required
-                    type="tel"
-                    value={applicationForm.phoneNumber}
-                    onChange={(e) => setApplicationForm({...applicationForm, phoneNumber: e.target.value})}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm"
-                    placeholder="+91 1234567890"
-                  />
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <span className="text-lg">🇳🇵</span>
+                    </div>
+                    <input
+                      required
+                      type="tel"
+                      value={applicationForm.phoneNumber}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val.startsWith('+977 ')) {
+                          setApplicationForm({...applicationForm, phoneNumber: val});
+                        } else if (val.length < 5) {
+                          setApplicationForm({...applicationForm, phoneNumber: '+977 '});
+                        } else {
+                          setApplicationForm({...applicationForm, phoneNumber: '+977 ' + val.replace(/^\+977\s*/, '')});
+                        }
+                      }}
+                      className="w-full pl-12 pr-4 py-3 bg-white/50 backdrop-blur-sm border border-blue-100 rounded-2xl focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600 focus:bg-white transition-all text-sm font-bold text-blue-900 shadow-sm placeholder-blue-300"
+                      placeholder="98XXXXXXXX"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -1055,7 +1079,7 @@ const SeekerDashboard = () => {
                   type="text"
                   value={applicationForm.availability}
                   onChange={(e) => setApplicationForm({...applicationForm, availability: e.target.value})}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm"
+                  className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-blue-100 rounded-2xl focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600 focus:bg-white transition-all text-sm font-medium text-gray-700 shadow-sm placeholder-gray-300"
                   placeholder="e.g., Immediate, From next month, Part-time"
                 />
               </div>
@@ -1067,7 +1091,7 @@ const SeekerDashboard = () => {
                     type="url"
                     value={applicationForm.portfolioUrl}
                     onChange={(e) => setApplicationForm({...applicationForm, portfolioUrl: e.target.value})}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm"
+                    className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-blue-100 rounded-2xl focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600 focus:bg-white transition-all text-sm font-medium text-gray-700 shadow-sm placeholder-gray-300"
                     placeholder="https://yourportfolio.com"
                   />
                 </div>
@@ -1077,7 +1101,7 @@ const SeekerDashboard = () => {
                     type="url"
                     value={applicationForm.githubUrl}
                     onChange={(e) => setApplicationForm({...applicationForm, githubUrl: e.target.value})}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm"
+                    className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-blue-100 rounded-2xl focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600 focus:bg-white transition-all text-sm font-medium text-gray-700 shadow-sm placeholder-gray-300"
                     placeholder="https://github.com/username"
                   />
                 </div>
