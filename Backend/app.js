@@ -5,7 +5,7 @@ import authRoutes from './src/routes/authRoutes.js'
 import signupRoutes from './src/routes/signupRoutes.js'
 import internshipRoutes from './src/routes/internshipRoutes.js'
 import applicationRoutes from './src/routes/applicationRoutes.js'
-import notificationRoutes from './src/routes/notificationRoutes.js'
+
 import internProfileRoutes from './src/routes/internProfileRoutes.js'
 import companyProfileRoutes from './src/routes/companyProfileRoutes.js'
 import messageRoutes from './src/routes/messageRoutes.js'
@@ -28,7 +28,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api', signupRoutes)
 app.use('/api/internships', internshipRoutes)
 app.use('/api/applications', applicationRoutes)
-app.use('/api/notifications', notificationRoutes)
+
 app.use('/api/intern', internProfileRoutes)
 app.use('/api/company', companyProfileRoutes)
 app.use('/api/messages', messageRoutes)

@@ -60,8 +60,7 @@ export const deleteUser = async (req, res) => {
         const { id } = req.params
         const userId = Number(id)
 
-        // 1. Delete notifications and global messages involving this user
-        await prisma.notification.deleteMany({ where: { userId } })
+        // 1. Delete global messages involving this user
         await prisma.message.deleteMany({ where: { OR: [{ senderId: userId }, { receiverId: userId }] } })
 
         // 2. Handle Intern Profile and its applications

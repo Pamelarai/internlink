@@ -27,7 +27,7 @@ model User {
   createdAt        DateTime         @default(now())
   internProfile    InternProfile?
   providerProfile  ProviderProfile?
-  notifications    Notification[]
+
   sentMessages     Message[] @relation("SentMessages")
   receivedMessages Message[] @relation("ReceivedMessages")
 }
@@ -124,14 +124,7 @@ model Application {
   @@unique([internshipId, internId])
 }
 
-model Notification {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
-  message   String
-  isRead    Boolean  @default(false)
-  createdAt DateTime @default(now())
-}
+
 
 model Message {
   id            Int          @id @default(autoincrement())

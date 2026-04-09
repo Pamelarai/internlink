@@ -14,7 +14,7 @@ const SeekerDashboard = () => {
   });
   const [internships, setInternships] = useState([]);
   const [applications, setApplications] = useState([]);
-  const [notifications, setNotifications] = useState([]);
+
   const [reloadTrigger, setReloadTrigger] = useState(0);
   const [profileData, setProfileData] = useState(null);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -51,16 +51,15 @@ const SeekerDashboard = () => {
     } else {
       const loadDashboardData = async () => {
         try {
-          const [internshipsRes, applicationsRes, notificationsRes, profileRes] = await Promise.all([
+          const [internshipsRes, applicationsRes, profileRes] = await Promise.all([
             api.get('/internships'),
             api.get('/applications/intern'),
-            api.get('/notifications'),
             api.get('/intern/my/profile').catch(() => ({ data: { data: null } })) // Handle case where profile doesn't exist yet
           ]);
 
           setInternships(internshipsRes.data);
           setApplications(applicationsRes.data);
-          setNotifications(notificationsRes.data);
+
 
           // Load profile data if it exists
           if (profileRes.data && profileRes.data.data && profileRes.data.data.profile) {
@@ -436,26 +435,7 @@ const SeekerDashboard = () => {
     </div>
   );
 
-  const renderNotifications = () => (
-    <div className="bg-white rounded-xl shadow-sm border border-blue-200 p-6">
-      <h2 className="text-2xl font-bold text-blue-900 mb-6">Notifications</h2>
-      <div className="space-y-3">
-        {notifications.map((notification) => (
-          <div key={notification.id} className={`p-4 rounded-lg border ${notification.isRead ? 'bg-blue-50 border-blue-100' : 'bg-blue-100 border-blue-200'}`}>
-            <p className="text-sm text-blue-900">{notification.message}</p>
-            <p className="text-xs text-blue-600 mt-1">{new Date(notification.createdAt).toLocaleString()}</p>
-          </div>
-        ))}
-        {notifications.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-blue-400 text-6xl mb-4">🔔</div>
-            <h3 className="text-lg font-semibold text-blue-900 mb-2">No notifications</h3>
-            <p className="text-blue-600">You'll receive updates about your applications here.</p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+
 
   const renderProfile = () => (
     <div className="bg-white rounded-xl shadow-sm border border-blue-200 p-6">
@@ -739,7 +719,7 @@ const SeekerDashboard = () => {
                 { id: 'overview', label: 'Dashboard' },
                 { id: 'internships', label: 'Browse' },
                 { id: 'applications', label: 'Applications' },
-                { id: 'notifications', label: 'Inbox' },
+
                 { id: 'messages', label: 'Messages' },
                 { id: 'profile', label: 'Profile' }
               ].map(item => (
@@ -774,7 +754,7 @@ const SeekerDashboard = () => {
         {activeTab === 'overview' && renderOverview()}
         {activeTab === 'internships' && renderInternships()}
         {activeTab === 'applications' && renderApplications()}
-        {activeTab === 'notifications' && renderNotifications()}
+
         {activeTab === 'messages' && <Messages initialContact={messageContact} />}
         {activeTab === 'profile' && renderProfile()}
       </main>

@@ -31,13 +31,7 @@ async function testApply() {
 
         console.log('Application created:', application);
 
-        console.log('Creating notification...');
-        await prisma.notification.create({
-            data: {
-                userId: internship.provider.userId,
-                message: 'Test notification'
-            }
-        });
+
 
         console.log('Test successful');
     } catch (error) {

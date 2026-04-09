@@ -13,7 +13,7 @@ const ProviderDashboard = () => {
   });
   const [internships, setInternships] = useState([]);
   const [applications, setApplications] = useState([]);
-  const [notifications, setNotifications] = useState([]);
+
   const [showPostForm, setShowPostForm] = useState(false);
   const [editingInternship, setEditingInternship] = useState(null);
   const [viewingInternship, setViewingInternship] = useState(null);
@@ -45,16 +45,15 @@ const ProviderDashboard = () => {
     } else {
       const loadDashboardData = async () => {
         try {
-          const [internshipsRes, applicationsRes, notificationsRes, profileRes] = await Promise.all([
+          const [internshipsRes, applicationsRes, profileRes] = await Promise.all([
             api.get('/internships/provider'),
             api.get('/applications/provider'),
-            api.get('/notifications'),
             api.get('/company/my/profile').catch(() => ({ data: { data: null } }))
           ]);
  
           setInternships(internshipsRes.data);
           setApplications(applicationsRes.data);
-          setNotifications(notificationsRes.data);
+
 
           if (profileRes.data && profileRes.data.data && profileRes.data.data.company) {
             const profile = profileRes.data.data.company;
@@ -460,19 +459,7 @@ const ProviderDashboard = () => {
     </div>
   );
 
-  const renderNotifications = () => (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">Notifications</h2>
-      <div className="space-y-2">
-        {notifications.map((notification) => (
-          <div key={notification.id} className={`p-3 rounded ${notification.isRead ? 'bg-gray-50' : 'bg-blue-50'}`}>
-            <p className="text-sm">{notification.message}</p>
-            <p className="text-xs text-gray-500">{new Date(notification.createdAt).toLocaleString()}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+
 
   const renderCompanyProfile = () => (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -736,7 +723,7 @@ const ProviderDashboard = () => {
                 { id: 'overview', label: 'Dashboard' },
                 { id: 'internships', label: 'Internships' },
                 { id: 'applications', label: 'Applicants' },
-                { id: 'notifications', label: 'Inbox' },
+
                 { id: 'messages', label: 'Messages' },
                 { id: 'profile', label: 'Company' }
               ].map(item => (
@@ -771,7 +758,7 @@ const ProviderDashboard = () => {
         {activeTab === 'overview' && renderOverview()}
         {activeTab === 'internships' && renderInternships()}
         {activeTab === 'applications' && renderApplications()}
-        {activeTab === 'notifications' && renderNotifications()}
+
         {activeTab === 'messages' && <Messages initialContact={messageContact} />}
         {activeTab === 'profile' && renderCompanyProfile()}
       </main>
