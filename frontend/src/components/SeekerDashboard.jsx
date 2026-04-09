@@ -358,9 +358,14 @@ const SeekerDashboard = () => {
                   </button>
                   <button
                     onClick={() => handleApply(internship)}
-                    className="flex-[1.5] bg-blue-600 text-white py-3 rounded-2xl font-black text-sm hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all uppercase tracking-tight"
+                    disabled={applications.some(app => app.internshipId === internship.id)}
+                    className={`flex-[1.5] py-3 rounded-2xl font-black text-sm shadow-lg transition-all uppercase tracking-tight ${
+                      applications.some(app => app.internshipId === internship.id)
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'
+                        : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-100'
+                    }`}
                   >
-                    Apply Now
+                    {applications.some(app => app.internshipId === internship.id) ? 'Applied' : 'Apply Now'}
                   </button>
                 </div>
               </div>
@@ -869,9 +874,14 @@ const SeekerDashboard = () => {
                   handleApply(viewingInternship);
                   setViewingInternship(null);
                 }}
-                className="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-black hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all tracking-tight"
+                disabled={applications.some(app => app.internshipId === viewingInternship.id)}
+                className={`flex-[2] py-4 rounded-2xl font-black shadow-lg transition-all tracking-tight ${
+                  applications.some(app => app.internshipId === viewingInternship.id)
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'
+                    : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200'
+                }`}
               >
-                Apply Now
+                {applications.some(app => app.internshipId === viewingInternship.id) ? 'Applied' : 'Apply Now'}
               </button>
               <button 
                 onClick={() => {

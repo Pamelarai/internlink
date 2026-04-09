@@ -23,8 +23,7 @@ router.get('/categories', adminController.getCategories)
 router.post('/categories', adminController.addCategory)
 router.delete('/categories/:id', adminController.deleteCategory)
 
-router.get('/skills', adminController.getSkills)
-router.post('/skills', adminController.addSkill)
-router.delete('/skills/:id', adminController.deleteSkill)
+
+
 
 export default router

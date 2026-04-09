@@ -201,34 +201,5 @@ export const deleteCategory = async (req, res) => {
     }
 }
 
-export const getSkills = async (req, res) => {
-    try {
-        const skills = await prisma.skill.findMany()
-        return sendSuccess(res, skills, 'Skills fetched successfully')
-    } catch (err) {
-        console.error('Get skills error:', err)
-        return sendError(res, 'Server error', 500)
-    }
-}
 
-export const addSkill = async (req, res) => {
-    try {
-        const { name } = req.body
-        const skill = await prisma.skill.create({ data: { name } })
-        return sendSuccess(res, skill, 'Skill added successfully')
-    } catch (err) {
-        console.error('Add skill error:', err)
-        return sendError(res, 'Server error', 500)
-    }
-}
 
-export const deleteSkill = async (req, res) => {
-    try {
-        const { id } = req.params
-        await prisma.skill.delete({ where: { id: Number(id) } })
-        return sendSuccess(res, null, 'Skill deleted successfully')
-    } catch (err) {
-        console.error('Delete skill error:', err)
-        return sendError(res, 'Server error', 500)
-    }
-}
